@@ -1,0 +1,12 @@
+// Isiliel — scripting language interpreter/compiler.
+// Embedded: sandbox, embedding API, OOP, 2D graphics, and REPL.
+// Authors: Eben (AI-assisted) | Version: 1.0 | Date: 2026-11-08
+fn bench() {
+    t = [];
+    for (i = 1; i <= 100000; i = i + 1) {
+        append(t, "abc");
+    }
+    s = concat(t);
+    return len(s);
+}
+printf("%d\n", bench());

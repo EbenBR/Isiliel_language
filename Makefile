@@ -1,6 +1,6 @@
 # Isiliel — interpretador/compilador de linguagem de script.
 # Embarcado: sandbox, API de embutimento, OOP, graficos 2D e REPL.
-# Autores: EEPS e MiMo-V2.6 | Versao: 1.0 | Data: 2026-11-08
+# Autores: Eben (AI-assisted) | Versao: 1.0 | Data: 2026-11-08
 # Este arquivo: build (lib + runner, release, embedded, bench, test).
 CXX      ?= g++
 CXXFLAGS ?= -Wall -Wextra -Wpedantic -g3 -O0 -std=c++17 -Wno-unused-parameter

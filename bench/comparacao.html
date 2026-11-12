@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Isiliel vs Lua 5.4 — Comparison (benchmarks and features)</title>
+<style>
+  :root {
+    --lua: #1a4f8b; --isl: #0f766e; --bg: #f8fafc; --card: #ffffff;
+    --line: #d8dee9; --txt: #1e293b; --muted: #64748b; --ok: #15803d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 2rem 1rem; background: var(--bg); color: var(--txt);
+         font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 960px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 1.6rem; }
+  h1 { margin: 0 0 .3rem; font-size: 1.9rem; }
+  h1 .isl { color: var(--isl); } h1 .lua { color: var(--lua); }
+  .meta { color: var(--muted); font-size: .92rem; }
+  h2 { font-size: 1.2rem; margin: 2rem 0 .6rem; border-left: 4px solid var(--isl);
+       padding-left: .55rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+          padding: .9rem 1rem; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .94rem; }
+  th, td { padding: .48rem .6rem; border-bottom: 1px solid var(--line); text-align: left; }
+  thead th { background: #eef2f7; font-size: .86rem; text-transform: uppercase;
+             letter-spacing: .03em; color: var(--muted); }
+  tbody tr:nth-child(even) { background: #f6f8fb; }
+  tfoot td { font-weight: 700; background: #eef2f7; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums;
+                   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  .lua-h { color: var(--lua); } .isl-h { color: var(--isl); }
+  .bar { display: inline-block; height: .72rem; border-radius: 3px; vertical-align: middle; }
+  .bar.lua { background: var(--lua); min-width: 3px; }
+  .bar.isl { background: var(--isl); min-width: 3px; }
+  .ratio { font-weight: 700; color: #9a3412; }
+  .ok { color: var(--ok); font-weight: 600; }
+  .yes  { color: var(--ok); font-weight: 600; }
+  .no   { color: #b91c1c; font-weight: 600; }
+  .part { color: #a16207; font-weight: 600; }
+  .legend { color: var(--muted); font-size: .86rem; margin: .45rem 0 0; }
+  footer { margin-top: 2.2rem; color: var(--muted); font-size: .86rem;
+           text-align: center; border-top: 1px solid var(--line); padding-top: .8rem; }
+  code { background: #eef2f7; border: 1px solid var(--line); border-radius: 4px;
+         padding: .05rem .3rem; font-size: .88em; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1><span class="isl">Isiliel</span> <span style="color:var(--muted)">vs</span> <span class="lua">Lua 5.4</span></h1>
+  <div class="meta">Performance and feature comparison — Isiliel interpreter vs Lua&nbsp;5.4.6</div>
+  <div class="meta">Authors: Eben (AI-assisted) | Version: 1.0 | Date: 2026-11-08</div>
+</header>
+
+<h2>1. Benchmarks (same algorithms on both sides)</h2>
+<div class="card">
+<table>
+  <thead>
+    <tr>
+      <th>Benchmark</th>
+      <th class="num lua-h">Lua 5.4 (ms)</th>
+      <th></th>
+      <th class="num isl-h">Isiliel (ms)</th>
+      <th></th>
+      <th class="num">Isiliel ÷ Lua</th>
+      <th>Checksum</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>loop (3×10⁶ arith iters)</td>
+      <td class="num">20.873</td>
+      <td><span class="bar lua" style="width:21.3%"></span></td>
+      <td class="num">44.514</td>
+      <td><span class="bar isl" style="width:45.4%"></span></td>
+      <td class="num ratio">2.1×</td>
+      <td class="ok">ok</td>
+    </tr>
+    <tr>
+      <td>fib(27) recursive</td>
+      <td class="num">9.251</td>
+      <td><span class="bar lua" style="width:9.4%"></span></td>
+      <td class="num">36.401</td>
+      <td><span class="bar isl" style="width:37.1%"></span></td>
+      <td class="num ratio">3.9×</td>
+      <td class="ok">ok</td>
+    </tr>
+    <tr>
+      <td>strings (10⁵ pieces + concat)</td>
+      <td class="num">2.676</td>
+      <td><span class="bar lua" style="width:2.7%"></span></td>
+      <td class="num">7.308</td>
+      <td><span class="bar isl" style="width:7.5%"></span></td>
+      <td class="num ratio">2.7×</td>
+      <td class="ok">ok</td>
+    </tr>
+    <tr>
+      <td>tables (5×10⁵ push + sum)</td>
+      <td class="num">9.320</td>
+      <td><span class="bar lua" style="width:9.5%"></span></td>
+      <td class="num">57.758</td>
+      <td><span class="bar isl" style="width:58.9%"></span></td>
+      <td class="num ratio">6.2×</td>
+      <td class="ok">ok</td>
+    </tr>
+    <tr>
+      <td>complex (Mandelbrot 200×200)</td>
+      <td class="num">28.836</td>
+      <td><span class="bar lua" style="width:29.4%"></span></td>
+      <td class="num">98.040</td>
+      <td><span class="bar isl" style="width:100%"></span></td>
+      <td class="num ratio">3.4×</td>
+      <td class="ok">ok</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td>Total / overall ratio</td>
+      <td class="num">70.956</td>
+      <td></td>
+      <td class="num">244.021</td>
+      <td></td>
+      <td class="num ratio">3.4×</td>
+      <td class="ok">5/5</td>
+    </tr>
+  </tfoot>
+</table>
+<p class="legend">Bars on the same scale (100% = 98.040&nbsp;ms). Checksum = final value
+computed; verified equal (and equal to the expected value) in both interpreters.
+In the complex benchmark Isiliel uses the native complex type (<code>rect</code>,
+<code>z*z+c</code>, <code>abs</code>); Lua uses two real/imaginary scalars +
+<code>math.sqrt</code>.</p>
+</div>
+
+<h2>2. Features and characteristics</h2>
+<div class="card">
+<table>
+  <thead>
+    <tr><th>Aspect</th><th class="lua-h">Lua 5.4</th><th class="isl-h">Isiliel 1.0</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Performance (measured above)</td><td>reference (optional JIT via LuaJIT)</td><td><strong>2.1× to 6.2×</strong> slower (weighted average ~3.4×; base 44.2× before E10–E19)</td></tr>
+    <tr><td>Garbage collector</td><td>full collector (cycles included)</td><td><span class="part">ref-count</span> + cycle collector (L13: trial deletion, <code>collectgarbage()</code>)</td></tr>
+    <tr><td>Closures / upvalues</td><td class="yes">yes</td><td class="yes">yes (L12: anonymous functions capture locals; named ones do not)</td></tr>
+    <tr><td>Metatables / prototypes</td><td class="yes">yes (metatables + OOP via __index)</td><td class="yes">yes (L11: <code>__index/__call/__add/__eq/__tostring/__gc</code>) + <span class="part">ready-made classes</span>: <code>class/extends/new/super</code></td></tr>
+    <tr><td>Coroutines</td><td class="yes">yes</td><td class="yes">yes (<code>cocreate/coresume/coyield</code>)</td></tr>
+    <tr><td>Real threads</td><td class="no">no (cooperative)</td><td class="yes">yes (<code>thread</code> = OS std::thread, with an output lock)</td></tr>
+    <tr><td>Typing</td><td>dynamic (int64/float numbers)</td><td>dynamic + native int64 <code>VAL_INT</code> (L7) + optional typed scalars (<code>i32 x = 5;</code>)</td></tr>
+    <tr><td>Multiple returns</td><td class="yes">yes</td><td class="yes">yes (L5: <code>return a,b</code>, varargs, <code>select</code>)</td></tr>
+    <tr><td>String patterns</td><td class="yes">yes (complete)</td><td class="yes">yes (L9: <code>match/gmatch/gsub</code>)</td></tr>
+    <tr><td>Sandbox</td><td class="no">not built in (external ecosystem)</td><td class="yes">native: <code>allow_fileio</code>/<code>allow_modules</code>, step limit (<code>step_limit</code>)</td></tr>
+    <tr><td>Module integrity</td><td class="no">no</td><td class="yes">SHA-256 hash in the <code>.mod</code> manifest, verified at load</td></tr>
+    <tr><td>Embedding API</td><td>classic C API (manual: stack, refcounts, protected calls)</td><td class="yes"><code>interp_run()</code> + <code>InterpResult{ok,error,output}</code>, <code>interp_reset()</code>, <code>interp_register_fn()</code>, sandbox in <code>InterpOptions</code></td></tr>
+    <tr><td>2D graphics</td><td>via external libraries (e.g. LÖVE, SDL bindings)</td><td class="yes">built in (Processing-style, software/raylib backend) + <code>save_screen</code></td></tr>
+    <tr><td>Native modules</td><td><code>require</code> of <code>.so</code> (C ABI)</td><td><code>import(...)</code> of a <code>.mod</code> manifest (JSON) + shared library, with integrity verification</td></tr>
+    <tr><td>Bytecode inspection</td><td><code>luac -l</code> (separate tool)</td><td class="yes"><code>--disasm</code> built into the runner</td></tr>
+    <tr><td>pcall / errors</td><td class="yes">yes</td><td class="yes"><code>pcall</code> + tracebacks with function name and line</td></tr>
+    <tr><td>Size (static)</td><td><code>lua5.4</code> binary ≈ 290&nbsp;KB; <code>liblua5.4.a</code> ≈ 489&nbsp;KB</td><td>stripped embedded runner (no raylib) ≈ 487&nbsp;KB</td></tr>
+    <tr><td>Ecosystem / maturity</td><td>1993–, de facto standard, abundant libraries</td><td>2026, own project, built-in libs (string/table/os/graphics)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>3. Methodology</h2>
+<div class="card">
+<ul style="margin:.3rem 0 .3rem; padding-left:1.2rem">
+  <li><strong>Command:</strong> <code>make bench</code> — compiles <code>bench/host_bench.cpp</code> with <code>-O2 -DNDEBUG -flto</code>, runs the 5 benchmarks in both interpreters, and validates the checksums.</li>
+  <li><strong>Measured time:</strong> load + execution (source compilation included on both sides); <strong>best of 3</strong> runs.</li>
+  <li><strong>Versions:</strong> Lua 5.4.6 (<code>liblua5.4.a</code> from the Ubuntu package, built with <code>-O2</code>) vs Isiliel 1.0 (<code>-O2 -DNDEBUG</code>).</li>
+  <li><strong>Environment:</strong> Ubuntu (g++ 13.3.0), Intel Core i7-11800H @ 2.30GHz, x86_64.</li>
+  <li><strong>Correctness:</strong> each benchmark produces a numeric checksum identical on both sides (2997000000, 196418, 300000, 125000250000, 807857) — a mismatch fails the host.</li>
+  <li><strong>Complex numbers:</strong> Mandelbrot <code>z = z² + c</code> at 200×200 with 50 iterations; Isiliel uses the native complex type and Lua uses two scalars (there is no native complex type).</li>
+  <li><strong>Sources:</strong> <code>bench/lua/*.lua</code>, <code>bench/isl/*.isi</code>, host in <code>bench/host_bench.cpp</code>.</li>
+</ul>
+</div>
+
+<footer>
+  Isiliel — scripting language interpreter/compiler (sandbox, embedding API, OOP, 2D graphics, and REPL)<br>
+  Authors: Eben (AI-assisted) | Version: 1.0 | Date: 2026-11-08 | Self-contained HTML5 page (no external resources)
+</footer>
+</main>
+</body>
+</html>

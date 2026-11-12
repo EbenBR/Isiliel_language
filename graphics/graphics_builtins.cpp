@@ -1,6 +1,6 @@
 // Isiliel — scripting language interpreter/compiler.
 // Embedded: sandbox, embedding API, OOP, 2D graphics and REPL.
-// Authors: EEPS and MiMo-V2.6 | Version: 1.0 | Date: 2026-11-08
+// Authors: Eben (AI-assisted) | Version: 1.0 | Date: 2026-11-08
 
 #include "graphics_builtins.h"
 #include "graphics.h"

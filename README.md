@@ -10,7 +10,7 @@ source -> lexer -> bytecode compiler -> stack-based virtual machine
 The same executable provides a script runner, an interactive REPL, a
 bytecode disassembler, and a C++ embedding API.
 
-- **Authors:** EEPS and MiMo-V2.6
+- **Authors:** Eben (AI-assisted)
 - **Version:** 1.0
 - **Date:** 2026-11-08
 - **Language:** C++17
