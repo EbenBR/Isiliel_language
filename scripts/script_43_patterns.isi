@@ -1,0 +1,15 @@
+// script_43 - L9: string patterns (match/gmatch/gsub).
+println(match("hello 123 world", "%d+"));    // 123
+println(match("abc123", "(%a+)(%d+)"));      // abc (1a captura)
+println("[" + match("abc", "x") + "]");      // [] (sem nil ainda)
+
+a = gmatch("a1 b22 c333", "%d+");            // lista (nao iterator)
+println(len(a));                             // 3
+println(a[0] + "," + a[1] + "," + a[2]);     // 1,22,333
+
+println(gsub("a1b2", "%d", "#"));            // a#b#
+println(gsub("abc", "(%a)", "[%1]"));        // [a][b][c]
+println(match("  x  ", "^%s*(.-)%s*$"));     // x
+println(match("(abc)", "%b()"));             // (abc)
+println(match("hello world", "%f[%a]world"));// world
+println(match("abab", "(ab)%1"));            // ab

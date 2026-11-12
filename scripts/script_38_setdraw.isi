@@ -1,0 +1,15 @@
+// script_38 - L1: draw() como callback explicito via setDraw(fn).
+// setup() roda primeiro (L0) e registra o quadro; o epilogo chama o callback
+// registrado (nao precisa existir uma funcao global chamada draw).
+
+global n;
+
+void quadro() {
+    n = n + 1;
+    println("quadro " + str(n) + " frame " + str(frameCount()));
+}
+
+void setup() {
+    size(80, 60);
+    setDraw(quadro);   // preferencialmente dentro de setup()
+}

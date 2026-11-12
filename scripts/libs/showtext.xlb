@@ -1,0 +1,14 @@
+// showtext.xlb — biblioteca de exemplo para `include("...")` (item 16)
+//
+// `.xlb` = biblioteca com codigo puro da linguagem: o include embute as
+// definicoes no script antes de compilar (uma vez por unidade de compilacao).
+
+void showtext(msg) {
+    println("[xlb] " + msg);
+}
+
+void banner(titulo) {
+    println("----------------");
+    println(" " + titulo);
+    println("----------------");
+}

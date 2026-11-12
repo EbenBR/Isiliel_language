@@ -1,0 +1,8 @@
+// Biblioteca de teste para o include (roadmap item 7)
+dobro(x) {
+    return (x * 2);
+}
+
+saudacao() {
+    return "ola da bib";
+}

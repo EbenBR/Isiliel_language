@@ -1,0 +1,15 @@
+// script_45 - L15: subconjuntos de string/math/os/utf8.
+println(sub("abcdef", 1, 3));    // bcd (0-based, inclusivo)
+println(sub("abcdef", -2));      // ef
+println(byte("A"));              // 65
+println(char(72, 105));          // Hi
+println(format("%d-%s", 7, "x"));// 7-x
+println(reverse("abc"));         // cba
+println(fmod(7, 3));             // 1
+println(utf8_len("abc"));        // 3
+println(utf8_len("ção"));        // 3 code points
+println(utf8_codepoint("A"));    // 65
+println(utf8_codepoint("ç"));    // 231
+println(utf8_char(65));          // A
+println(len(os_date("%Y")));     // 4
+println(os_time() > 0);          // 1

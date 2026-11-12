@@ -1,0 +1,55 @@
+// script_24_threads - threads: thread/start/stop/pause/resume + delay (item 15)
+//
+// Threads leem e escrevem GLOBAIS (declaradas com `global` no script).
+// O .out e deterministico: a thread imprime exatamente 3 "Hello" (para de
+// imprimir assim que cont >= 3) e o main so imprime APOS o join (stop).
+
+global cont;
+cont = 0;
+
+thread saudacao() {
+    while (1) {
+        if (cont < 3) {
+            println("Hello");
+        }
+        cont = cont + 1;
+        delay(20);
+    }
+}
+
+start saudacao();
+while (cont < 3) {
+    delay(10);
+}
+stop saudacao();
+println("parou apos 3 hellos");
+
+// pause congela (leituras iguais), resume retoma (leitura maior), stop finaliza
+cont = 0;
+thread contando() {
+    while (1) {
+        cont = cont + 1;
+        delay(15);
+    }
+}
+start contando();
+delay(80);
+pause contando();
+d1 = cont;
+delay(50);
+d2 = cont;
+if (d1 == d2) {
+    println("pausada ok");
+} else {
+    println("pausada FALHOU");
+}
+resume contando();
+delay(50);
+d3 = cont;
+if (d3 > d2) {
+    println("retomou ok");
+} else {
+    println("retomou FALHOU");
+}
+stop contando();
+println("fim");

@@ -1,0 +1,98 @@
+// L7: inteiro nativo int64 (separado de double)
+
+println("== literais ==");
+println(0);
+println(42);
+println(9223372036854775807);
+println(-9223372036854775807);
+
+println("== aritmetica ==");
+println(1 + 2);
+println(5 - 7);
+println(6 * 7);
+println(7 / 2);
+println(8 / 2);
+println(7 % 3);
+println(-7 % 3);
+println(1 + 2.5);
+println(2 * 3.0);
+
+println("== wrap-around ==");
+println(9223372036854775807 + 1);
+println(-9223372036854775807 - 2);
+println(9223372036854775807 * 2);
+
+println("== bitwise ==");
+println(1 << 62);
+println(~0);
+println(5 & 3);
+println(5 | 2);
+println(5 ^ 1);
+
+println("== comparacao ==");
+println(9223372036854775807 > 9223372036854775806);
+println(9223372036854775807 == 9223372036854775807);
+println(9223372036854775807 != 9223372036854775806);
+println(9223372036854775807 < 9223372036854775807.0);
+println(9223372036854775807 == 9223372036854775807.0);
+
+println("== texto ==");
+println(str(9223372036854775807));
+println(tostring(-42));
+printf("%d\n", 9223372036854775807);
+printf("%s\n", -42);
+printf("%g\n", 42);
+
+println("== tabelas ==");
+t = {};
+t[9223372036854775807] = "grande";
+t[1] = "um";
+println(t[9223372036854775807]);
+println(t[1]);
+k = keys(t);
+println(k[0]);
+println(k[1]);
+
+println("== tonumber ==");
+println(tonumber("9223372036854775807"));
+println(tonumber("9223372036854775807") + 1);
+println(tonumber("42") + 1);
+println(tonumber("ff", 16) + 1);
+println(tonumber("-8000000000000000", 16));
+
+println("== builtins numericos ==");
+println(floor(42));
+println(ceil(-42));
+println(round(7));
+println(abs(-7));
+
+println("== loops ==");
+s = 0;
+for (i = 0; i < 5; i = i + 1) { s = s + i; }
+println(s);
+f = 1;
+for (i = 1; i <= 5; i = i + 1) { f = f * i; }
+println(f);
+n = 0;
+for (i = 0; i < 2.5; i = i + 1) { n = n + 1; }
+println(n);
+n = 0;
+for (i = 0; i < 5; i = i + 2) { n = n + 1; }
+println(n);
+
+println("== funcoes ==");
+inc(x) { return x + 1; }
+println(inc(9223372036854775806));
+println(abs(-9223372036854775807));
+println(min(9223372036854775807, 1));
+println(max(9223372036854775806, 9223372036854775807));
+
+println("== escalar tipado ==");
+i64 x = 9223372036854775807;
+println(x);
+i64 y = x;
+println(y + 1);
+
+println("== tipo ==");
+println(type(1));
+println(type(1.0));

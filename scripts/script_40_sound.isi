@@ -1,0 +1,30 @@
+// script_40 - L3: modulo de som (WAV em memoria; backend software).
+// Fixture: tests/fixtures/tone.wav (8000 Hz, mono, 16 bits, 0,1 s).
+h = sound_load("tests/fixtures/tone.wav");
+println(sound_sample_rate(h));   // 8000
+println(sound_channels(h));      // 1
+println(sound_frames(h));        // 800
+println(sound_duration(h));      // 0.1
+println(sound_sample(h, 0));     // 0.5
+println(sound_sample(h, 400));   // -0.5
+
+sound_play(h, 0);                // toca 1x
+println(sound_is_playing(h));    // 1
+sound_update(0.05);              // avanca 0,05 s (deterministico)
+println(sound_position(h));      // 0.05
+sound_pause(h);
+sound_update(0.05);
+println(sound_position(h));      // 0.05 (pausado nao avanca)
+sound_resume(h);
+sound_update(0.06);              // passa do fim
+println(sound_is_playing(h));    // 0
+
+sound_play(h, 1);                // 1 repeticao
+sound_update(0.15);              // 0,15 s = 1 volta + 0,05 s
+println(sound_is_playing(h));    // 1
+println(sound_position(h));      // 0.05
+sound_stop(h);
+println(sound_position(h));      // 0
+
+sound_unload(h);
+println(sound_is_playing(h));    // 0 (handle invalido)

@@ -1,0 +1,62 @@
+// script_49 - L6: valor nil (tipo, impressao, verdade, igualdade e tabelas).
+println(nil);
+println(type(nil));
+println(tostring(nil));
+println(str(nil));
+printf("[%s]\n", nil);
+
+// Igualdade: nil so e igual a nil
+println(nil == nil);
+println(nil != nil);
+println(nil == 0);
+println(nil == "");
+println(nil == false);
+
+// Verdade: nil e falso
+if (nil) { println("ruim"); } else { println("falso"); }
+println(nil && 1);
+println(nil || 1);
+println(1 && nil);
+println(1 || nil);
+
+// Variaveis e retorno de funcao
+x = nil;
+println(x);
+fn vazio() { return nil; }
+println(vazio());
+
+// Tabelas: chave/campo ausente devolve nil; atribuir nil apaga
+t = {a = 1};
+println(t["ausente"]);
+println(t.ausente);
+println(has(t, "ausente"));
+println(rawget(t, "ausente"));
+t["b"] = 2;
+println(t["b"]);
+t["b"] = nil;
+println(has(t, "b"));
+println(t["b"]);
+t.c = 3;
+println(t.c);
+t.c = nil;
+println(t.c);
+println(len(t));
+println(keys(t));
+
+// literal com valor nil nao cria a chave
+lit = {a = 1, b = nil};
+println(len(lit));
+println(has(lit, "b"));
+
+// rawset com nil apaga
+rawset(t, "a", nil);
+println(len(t));
+
+// tonumber invalido devolve nil
+println(tonumber("nope"));
+println(tonumber(nil));
+
+// pcall: funcao que devolve nil conclui com sucesso
+r = pcall(vazio);
+println(r[0]);
+println(r[1]);

@@ -1,0 +1,57 @@
+// script_29_tipos_escalares - declaracoes tipadas opcionais: tipos escalares Rust (fase E1c)
+i32 a = 42;
+a = a + 1;
+println(a);              // 43
+
+i32 truncado = 3.99;     // trunca p/ zero (estilo C/Rust 'as')
+println(truncado);       // 3
+
+u8 porto = 255;          // limite superior de u8
+println(porto);          // 255
+
+f32 p = 16777217;        // 2^24+1 nao existe em f32
+printf("%d\n", p);       // 16777216 (arredonda p/ float32)
+
+f64 pi = 3.14159265358979;
+printf("%d\n", pi * 100000); // 314159
+
+bool ligado = 1;
+println(ligado);         // 1
+ligado = 0;
+println(ligado);         // 0
+println(true);           // 1 (literal, E1c)
+println(false);          // 0
+
+str saudacao = "ola, ";
+str nome = "mundo";
+println(saudacao + nome); // ola, mundo
+
+i32 s1 = 1, s2 = 2;      // cadeia de declaracoes
+println(s1 + s2);        // 3
+
+i32 zero;                // sem valor inicial -> 0
+println(zero);           // 0
+
+// prefixo de tipo na funcao (anotacao descartada; corpo continua dinamico)
+i32 dobro(x) { return x * 2; }
+println(dobro(21));      // 42
+
+// aliases estilo C: int -> i32, float -> f64
+int cint = 7;
+float cflt = 2.5;
+println(cint);           // 7
+println(cflt);           // 2.5
+
+// variavel sem declaracao continua dinamica (modelo atual preservado)
+livre = "texto";
+println(livre);          // texto
+println(livre + "!");    // texto!
+
+// struct com campo e metodo prefixados por tipo escalar
+type Conta {
+    i32 saldo;
+    i32 dobro_saldo() { return saldo * 2; }
+};
+Conta c = Conta{21};
+println(c.saldo);         // 21
+println(c.dobro_saldo()); // 42

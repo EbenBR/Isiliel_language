@@ -1,0 +1,27 @@
+# Build outputs
+build/
+*.o
+*.a
+*.so
+*.dylib
+*.out
+*.exe
+
+# Third-party dependencies
+third_party/
+
+# LaTeX build artifacts
+docs/*.aux
+docs/*.log
+docs/*.out
+docs/*.toc
+docs/*.fls
+docs/*.fdb_latexmk
+docs/*.synctex.gz
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store

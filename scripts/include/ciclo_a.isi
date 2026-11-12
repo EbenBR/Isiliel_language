@@ -1,0 +1,4 @@
+include("scripts/include/ciclo_b.isi");
+valor_ciclo() {
+    return 7;
+}

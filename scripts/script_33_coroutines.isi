@@ -1,0 +1,48 @@
+// E5: coroutines — cocreate/coresume/coyield/costatus
+fn conta() {
+    i = 0;
+    while (i < 3) {
+        coyield(i);
+        i = i + 1;
+    }
+    return "fim";
+}
+co = cocreate(conta);
+println(co);
+println(costatus(co));
+r = coresume(co);
+println(r[0]);
+println(r[1]);
+println(costatus(co));
+r = coresume(co, 99);
+println(r[1]);
+r = coresume(co);
+println(r);
+r = coresume(co);
+println(r[0]);
+println(r[1]);
+r = coresume(co);
+println(r[0]);
+println(r[1]);
+println(costatus(co));
+fn inner() { coyield("de-ai"); return 42; }
+fn outer() { a = inner(); return a + 1; }
+c = cocreate(outer);
+println(coresume(c));
+println(coresume(c));
+fn comArgs(a, b) { y = coyield(a + b); return y * 2; }
+c2 = cocreate(comArgs);
+println(coresume(c2, 3, 4));
+println(coresume(c2, 10));
+println(costatus(c2));
+fn quebra() { x = 1 / 0; return 0; }
+ce = cocreate(quebra);
+rq = coresume(ce);
+println(rq[0]);
+println(rq[1]);
+fn pcallYield() { coyield(1); return 0; }
+fn envolve() { return pcall(pcallYield); }
+c3 = cocreate(envolve);
+r3 = coresume(c3);
+println(r3[0]);
+println(r3[1]);

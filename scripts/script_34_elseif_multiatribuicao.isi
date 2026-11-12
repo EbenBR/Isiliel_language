@@ -1,0 +1,41 @@
+// E6 (negativo 9): elseif, multi-atribuicao e floordiv
+x = 7;
+if (x < 0) {
+    println("neg");
+} elseif (x == 0) {
+    println("zero");
+} elseif (x < 10) {
+    println("baixo");
+} else {
+    println("alto");
+}
+x = -3;
+if (x < 0) { println("neg"); } elseif (x == 0) { println("zero"); } else { println("alto"); }
+x = 0;
+if (x < 0) { println("neg"); } elseif (x == 0) { println("zero"); } else { println("alto"); }
+x = 42;
+if (x < 0) { println("neg"); } elseif (x == 0) { println("zero"); } else { println("alto"); }
+if (0) { println("a"); } elseif (0) { println("b"); }
+println("cadeia sem else ok");
+if (1) { println("direto"); } else if (0) { println("nao"); }
+
+// multi-atribuicao: todos os valores avaliados antes dos stores
+a = 0; b = 0;
+a, b = 3, 4;
+println(a);
+println(b);
+a, b = b, a;
+println(a);
+println(b);
+p = 0; q = 0; r = 0;
+p, q, r = 1, 2, 3;
+println(p);
+println(q);
+println(r);
+
+// floordiv: floor(a/b) — `//` nao pode ser operador (comentario no lexer)
+println(floordiv(7, 2));
+println(floordiv(-7, 2));
+println(floordiv(7.5, 2));
+println(floordiv(-7.5, 2));
+println(floordiv(6, 3));

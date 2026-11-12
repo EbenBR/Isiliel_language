@@ -1,0 +1,2260 @@
+% !TEX program = pdflatex
+% ============================================================================
+% Isiliel — Programming Manual/Tutorial
+% Single file, compilable on Overleaf with pdfLaTeX.
+% ============================================================================
+\documentclass[11pt,a4paper,oneside]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.4cm,bottom=2.4cm,left=2.5cm,right=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{textcomp}
+\usepackage{upquote}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+
+\definecolor{isilielblue}{RGB}{20,70,120}
+\definecolor{isilielgreen}{RGB}{30,110,60}
+\definecolor{isilielred}{RGB}{150,40,40}
+\definecolor{isilielgray}{RGB}{246,246,248}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=isilielblue,
+  urlcolor=isilielblue,
+  citecolor=isilielblue,
+  pdftitle={Isiliel v1 — Programming Manual/Tutorial},
+  pdfauthor={EEPS and MiMo-V2.6},
+  pdfsubject={Embedded scripting language}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Isiliel v1 --- Programming Manual/Tutorial}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{isilielblue}}
+  {\filright\Large Chapter \thechapter}
+  {1ex}
+  {\filright}
+\titlespacing*{\chapter}{0pt}{-10pt}{24pt}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlength{\emergencystretch}{2em}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.15em,topsep=0.25em}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=0.15em,topsep=0.25em}
+
+\lstdefinelanguage{Isiliel}{
+  morekeywords={if,else,elseif,while,for,return,break,continue,void,int,float,
+                fn,class,extends,new,super,include,import,type,global,thread,
+                start,stop,pause,resume,repeat,until,goto,nil,true,false,local},
+  morecomment=[l]{//},
+  morestring=[b]",
+  sensitive=true,
+  alsoletter={\_}
+}
+
+\lstdefinestyle{isiliel}{
+  language=Isiliel,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{isilielblue}\bfseries,
+  commentstyle=\color{isilielgreen}\itshape,
+  stringstyle=\color{isilielred},
+  numbers=none,
+  frame=single,
+  rulecolor=\color{gray!45},
+  backgroundcolor=\color{isilielgray},
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  tabsize=4,
+  xleftmargin=0.8em,
+  xrightmargin=0.8em,
+  aboveskip=0.7em,
+  belowskip=0.7em
+}
+\lstset{style=isiliel}
+
+\newcommand{\isiliel}{\textsc{Isiliel}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+% Cover
+% ---------------------------------------------------------------------------
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\Huge\bfseries\color{isilielblue} Isiliel v1\par}
+\vspace{0.4cm}
+{\LARGE Programming Manual/Tutorial\par}
+\vspace{0.8cm}
+{\large Embedded scripting language with a stack VM,\\
+classes, tables, coroutines, graphics, and a REPL\par}
+\vspace{2cm}
+\rule{0.75\textwidth}{0.6pt}\par
+\vspace{0.8cm}
+{\large EEPS and MiMo-V2.6\par}
+{\large Version 1.0\par}
+{\large \today\par}
+\vspace{0.8cm}
+\rule{0.75\textwidth}{0.6pt}\par
+\vfill
+{\small This document describes the language as implemented in version 1.0.\\
+Whenever the project documentation and the code diverge, the code is the source of truth.}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+
+\tableofcontents
+\clearpage
+
+\chapter{About This Manual}
+\label{cap:sobre}
+
+This is a practical manual and an introductory reference for the
+\isiliel{} language. It is written for people who want to \emph{use} the
+language: write scripts, organize code into functions and modules, use
+tables and classes, draw on screen, control coroutines, and embed the
+interpreter in a C++ program.
+
+The text assumes that you know how to program in some imperative language
+(C, Python, Lua, or JavaScript). You do not need to know the internal
+implementation, but some chapters mention behavioral details to help you
+avoid pitfalls.
+
+\section{How to Read}
+\begin{itemize}
+  \item Chapters \ref{cap:inicio} through \ref{cap:funcoes} form the
+        basic tutorial: installation, values, variables, control flow,
+        and functions.
+  \item Chapters \ref{cap:strings} through \ref{cap:metatables} cover the
+        data types and object-oriented programming.
+  \item Chapters \ref{cap:modulos} through \ref{cap:embed} cover
+        modules, errors, concurrency, the standard library, graphics, and
+        embedding.
+  \item The appendices contain the grammar summary, a quick builtin
+        reference, and complete programs.
+\end{itemize}
+
+\section{Conventions}
+\begin{itemize}
+  \item Gray-background blocks are \isiliel{} code. Comments use
+        \code{//}, and example text avoids accents inside code so it
+        remains compatible with any editor.
+  \item \code{println}, \code{printf}, and function names appear in a
+        monospaced font.
+  \item Paths such as \file{scripts/script\_1.isi} are relative to the
+        project root.
+  \item ``v1.0'' refers to the version described in this manual.
+\end{itemize}
+
+\section{Note on Known Differences}
+The language is evolving. Some points in the project documentation
+(\file{docs/roadmap.md} and \file{docs/linguagem.md}) describe the
+\emph{planned} behavior; this manual describes the \emph{current}
+behavior. The most important differences are collected in
+Chapter~\ref{cap:limitacoes}. In particular, in v1.0:
+\begin{itemize}
+  \item \code{true} and \code{false} are numeric literals (\code{1} and
+        \code{0}); there is no distinct runtime boolean type.
+  \item \code{\&\&} and \code{||} evaluate both operands and produce
+        \code{1}/\code{0}; there is no short-circuiting.
+  \item \code{!} is bitwise negation, not logical negation.
+  \item \code{pairs}/\code{ipairs} return lists; there is no
+        \code{for k,v in ...}.
+\end{itemize}
+
+% ===========================================================================
+\part{Getting Started}
+% ===========================================================================
+
+\chapter{Overview}
+\label{cap:visao}
+
+\isiliel{} is a dynamic scripting language implemented in C++17 with the
+pipeline:
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\centering
+source \ $\rightarrow$ \ lexer \ $\rightarrow$ \ bytecode compiler
+\ $\rightarrow$ \ stack VM}}
+\end{center}
+
+The same executable provides a file \emph{runner}, an interactive REPL,
+a disassembler, and an embedding API. The language was designed to be
+small and portable, with a focus on embedded systems, but it includes
+features found in general-purpose scripting languages.
+
+\section{Main Features}
+\begin{itemize}
+  \item Exact 64-bit integers and double-precision floating-point
+        numbers; complex numbers with the \code{j} suffix.
+  \item Immutable strings with escapes, indexing, slicing, and patterns.
+  \item Arduino String API (free functions) and C99 \file{math.h}
+        functions/constants.
+  \item 0-based lists/matrices with slicing, \code{append}, \code{sort},
+        and basic linear algebra.
+  \item Tables (dictionaries) with text, numeric, or boolean keys.
+  \item First-class functions, multiple returns, varargs, and anonymous
+        closures.
+  \item Structs and classes with single inheritance, an \code{init}
+        constructor, and \code{super}.
+  \item Metatables and metamethods (\code{\_\_index}, \code{\_\_call},
+        \code{\_\_add}, \code{\_\_eq}, \code{\_\_tostring}, \code{\_\_gc}).
+  \item Cycle collection by \emph{trial deletion}.
+  \item Modules through \code{include}, \code{require}, \code{load}, and
+        \code{dofile}; native \code{.mod} modules.
+  \item System threads and cooperative coroutines.
+  \item Processing-style 2D graphics with a headless software backend or
+        raylib.
+  \item REPL, automated tests, ASan/UBSan, fuzzer, and benchmarks.
+\end{itemize}
+
+\section{Execution Model}
+A script is compiled entirely to bytecode before execution. The VM is
+stack-based and keeps global and local symbols in a symbol table. The
+compiler resolves names at compile time when possible; direct calls use
+the function address, while function values use indirect calls.
+
+Running a file prints diagnostic banners and returns exit code \code{0}
+on success or \code{1} on error. The REPL suppresses the banners and
+keeps symbols and bytecode between lines.
+
+\section{Target Audience and Portability}
+The main implementation targets desktop systems, but the code avoids
+mandatory operating-system dependencies. The graphics backend is
+abstract (\code{software} or \code{raylib}), and the \code{make embedded}
+profile uses \code{-Os} without raylib. Threads and files are optional
+in embedded environments; see \file{docs/proposta\_embarcada.md} for the
+design decisions.
+
+% ---------------------------------------------------------------------------
+\chapter{Installation and First Steps}
+\label{cap:inicio}
+
+\section{Building}
+From the project root:
+
+\begin{lstlisting}[language=bash]
+make                 # build/isirun in debug mode (-O0 -g3)
+make test            # full test suite (164 cases in v1.0)
+make release         # -O2 -DNDEBUG -flto
+make embedded        # -Os, no raylib (embedded profile)
+make asan            # suite with AddressSanitizer + UBSan
+make fuzz            # deterministic fuzzer
+make bench           # benchmark against Lua 5.4
+\end{lstlisting}
+
+The \code{raylib} backend is detected through \code{pkg-config}; use
+\code{make USE\_RAYLIB=1} to force it or \code{make USE\_RAYLIB=0} to
+disable it. Without raylib, everything runs on the \code{software}
+backend (headless, writing \code{.ppm} images).
+
+\section{Running a Script}
+\begin{lstlisting}[language=bash]
+./build/isirun scripts/script_1_matriz_lu.isi
+./build/isirun --disasm scripts/script_1_matriz_lu.isi   # shows the bytecode
+./build/isirun                                 # interactive REPL
+\end{lstlisting}
+
+A script is a text file (usually \code{.isi}) with statements terminated
+by \code{;}. First example:
+
+\begin{lstlisting}
+// hello.isi
+nome = "mundo";
+println("Ola, " + nome + "!");
+\end{lstlisting}
+
+Output:
+\begin{lstlisting}[language=bash]
+Ola, mundo!
+\end{lstlisting}
+
+\section{The REPL}
+With no arguments, the executable starts a REPL. State (variables,
+functions, and bytecode) persists between lines. Blocks are entered over
+multiple lines; the \code{...} prompt continues until the braces are
+closed. A simple statement ends with \code{;}; a block ends with
+\code{\}}. \code{exit}, \code{quit}, or EOF terminate the session.
+
+\begin{lstlisting}[language=bash]
+>>> a = 2 + 3;
+>>> println(a);
+5
+>>> f(x) { return x * x; }
+>>> println(f(7));
+49
+\end{lstlisting}
+
+Compilation or execution errors are reported but do not end the session.
+The REPL enforces growth limits to prevent unlimited memory consumption
+(default: 250000 instructions and 50000 symbols). Adjust them with the
+environment variables \code{MYINTERP\_REPL\_CODE\_LIMIT} and
+\code{MYINTERP\_REPL\_SYMBOLS\_LIMIT}; \code{0} removes the limit.
+
+\section{First Complete Program}
+\begin{lstlisting}
+// media.isi: reads two numbers and computes the average
+a = 7;
+b = 9;
+media = (a + b) / 2;
+printf("media = %g\n", media);
+
+if (media >= 7) {
+    println("aprovado");
+} else {
+    println("reprovado");
+}
+\end{lstlisting}
+
+Note that \code{/} always produces a floating-point number. For integer
+division use \code{floordiv(a, b)}.
+
+\section{Errors and Traceback}
+Compilation errors include the line:
+\begin{lstlisting}[language=bash]
+ERRO COMPILACAO: Esperado ';' apos a expressao (linha 4)
+\end{lstlisting}
+
+Execution errors include the line and, when available, a traceback:
+\begin{lstlisting}[language=bash]
+ERRO EM TEMPO DE EXECUCAO: Divisao por zero (linha 7)
+  em quebra (linha 9)
+\end{lstlisting}
+
+Use \code{pcall} to catch runtime errors (Section~\ref{sec:pcall}).
+
+% ---------------------------------------------------------------------------
+\chapter{Lexical Structure}
+\label{cap:lexico}
+
+\section{Comments and Statements}
+Comments start with \code{//} and run to the end of the line. There are no
+block comments. Simple statements end with \code{;}. Some statements
+(function definitions, \code{include}, \code{import},
+\code{start}/\code{stop}/\code{pause}/\code{resume}) accept an optional
+semicolon; use \code{;} for consistency.
+
+\section{Identifiers and Keywords}
+Identifiers start with a letter or \code{\_} and may contain letters,
+digits, and \code{\_}. The reserved words are:
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+\code{if} & \code{else} & \code{elseif} & \code{while} \\
+\code{for} & \code{return} & \code{break} & \code{continue} \\
+\code{void} & \code{int} & \code{float} & \code{fn} \\
+\code{class} & \code{extends} & \code{new} & \code{super} \\
+\code{include} & \code{import} & \code{type} & \code{global} \\
+\code{thread} & \code{start} & \code{stop} & \code{pause} \\
+\code{resume} & \code{repeat} & \code{until} & \code{goto} \\
+\code{nil} & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\code{true}, \code{false}, \code{i32}, \code{f64}, \code{bool}, and
+\code{str} are not keywords: they are literals or prefixes recognized by
+the parser. That is why \code{type(x)} (the function) and
+\code{type Nome \{\}} (the struct definition) coexist without conflict.
+
+\section{Numeric Literals}
+\begin{itemize}
+  \item Decimal integers: \code{0}, \code{42}, \code{9223372036854775807}.
+        Literals that fit in \code{int64} are exact.
+  \item Floating point: \code{3.14}, \code{0.5}. The lexer does not accept
+        scientific notation: \code{1e9} is read as \code{1} followed by the
+        identifier \code{e9}.
+  \item Complex numbers: suffix \code{j} or \code{J}, as in Python:
+        \code{3j}, \code{1+2j}, \code{2.5J}.
+\end{itemize}
+
+\section{Strings}
+Strings are delimited by double quotes. Accepted escapes:
+\code{\textbackslash n}, \code{\textbackslash t},
+\code{\textbackslash r}, \code{\textbackslash\textbackslash},
+\code{\textbackslash "}, and \code{\textbackslash 0}. Unknown escapes
+keep the backslash (Python style): \code{"\textbackslash q"} becomes
+\code{\textbackslash q}. Strings are immutable.
+
+\begin{lstlisting}
+s = "linha 1\nlinha 2\tfim";
+println(len(s));      // number of characters
+println(s[0]);        // first character
+println(s[-1]);       // last character
+\end{lstlisting}
+
+\section{Operators}
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Category & Operators \\
+\midrule
+Arithmetic & \code{+  -  *  /  \%} \\
+Bitwise & \code{\&  |  \^{}  \textasciitilde  <<  >>} \\
+Comparison & \code{==  !=  <  >  <=  >=} \\
+Logical & \code{\&\&  ||} \\
+Assignment & \code{=  +=  -=  *=  /=} \\
+Access & \code{.  []  ()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+There is no \code{and}, \code{or}, \code{not}, \code{\#}, \code{..},
+or \code{//} operator. \code{//} is a comment; for integer division use
+\code{floordiv(a,b)}. For string concatenation use \code{+}. For logical
+negation use an explicit comparison, such as \code{x == 0} or
+\code{x == nil}.
+
+% ===========================================================================
+\part{The Language}
+% ===========================================================================
+
+\chapter{Values, Types, and Expressions}
+\label{cap:valores}
+
+\section{Available Types}
+The table below shows the values the programmer sees and what
+\code{type(x)} returns.
+
+\begin{center}
+\begin{longtable}{L{3.4cm}L{7.4cm}L{3.2cm}}
+\toprule
+Type & Example & \code{type(x)} \\
+\midrule
+Integer & \code{30}, \code{-7}, \code{0x1F} & \code{number} \\
+Floating point & \code{3.14}, \code{7 / 2} & \code{number} \\
+String & \code{"abc"} & \code{string} \\
+Boolean & \code{true}, \code{false} (1/0 in v1.0) & \code{number} \\
+List/matrix & \code{[1, 2, 3]}, \code{[[1,2],[3,4]]} & \code{array} \\
+Complex & \code{3j}, \code{1+2j} & \code{complex} \\
+Struct/class & \code{Ponto\{1, 2\}} & \code{struct} \\
+Table & \code{\{nome = "Ana"\}} & \code{table} \\
+Function & \code{fn(x) \{ return x; \}} & \code{function} \\
+Coroutine & \code{cocreate(f)} & \code{thread} \\
+Absent & \code{nil} & \code{nil} \\
+\bottomrule
+\end{longtable}
+\end{center}
+
+\section{Integers and Floating Point}
+Integers that fit in \code{int64} are exact. \code{+}, \code{-}, and
+\code{*} between integers wrap around at 64 bits. \code{/} always
+returns a \code{double}:
+
+\begin{lstlisting}
+println(7 / 2);       // 3.5
+println(7 % 2);       // 1
+println(floordiv(7, 2)); // 3
+println(9223372036854775807 + 1); // -9223372036854775808
+\end{lstlisting}
+
+Mixing an integer and a \code{double} promotes to \code{double}. Bitwise
+operators require integers; \code{5.5 \& 1} is an error.
+
+\section{Strings}
+Strings are immutable. The \code{+} operator concatenates two strings;
+mixing a string and a number is an error (there is no silent coercion).
+Use \code{str(x)} or \code{printf} to convert.
+
+\begin{lstlisting}
+nome = "Ana";
+println("Ola, " + nome);     // Hello, Ana
+println("abc" == "abc");     // 1
+println("abc" < "abd");      // 1 (lexicographic)
+\end{lstlisting}
+
+\section{Truth and Falsity}
+The table below describes the current implementation.
+
+\begin{center}
+\begin{tabular}{L{7cm}L{7cm}}
+\toprule
+Value & Truthy? \\
+\midrule
+\code{nil} & no \\
+\code{0}, \code{0.0}, \code{0j} & no \\
+\code{false} (which is \code{0}) & no \\
+Any string, including \code{""} & yes \\
+List, table, struct, function, coroutine & yes \\
+Nonzero number & yes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The project documentation lists the empty string as false, but the
+current code treats every string as true. Use \code{len(s) == 0} if you
+want to test for an empty string.
+
+\section{Logical Operators}
+In v1.0, \code{\&\&} and \code{||} evaluate both operands and return
+\code{1} or \code{0}. There is no short-circuiting. This means that
+\code{f() \&\& g()} always calls both functions. For conditional side
+effects, use \code{if}:
+
+\begin{lstlisting}
+if (a != 0) { g(); }
+\end{lstlisting}
+
+\code{!} and \code{\textasciitilde} are the same bitwise negation
+operator. Do not use \code{!x} as logical negation: \code{!0} is
+\code{-1}, which is true. To negate a condition, write \code{x == 0} or
+\code{x == nil}; \code{if (!(x))} is not recommended.
+
+\section{Precedence}
+From lowest to highest precedence:
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Level & Operators \\
+\midrule
+1 & assignment (\code{= += -= *= /=}) \\
+2 & \code{||} \\
+3 & \code{\&\&} \\
+4 & \code{|} \\
+5 & \code{\^{}} \\
+6 & \code{\&} \\
+7 & \code{== !=} \\
+8 & \code{< > <= >=} \\
+9 & \code{<< >>} \\
+10 & \code{+ -} \\
+11 & \code{* / \%} \\
+12 & unary \code{-}, \code{!}, \code{\textasciitilde} \\
+13 & postfix \code{() [] .} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Use parentheses whenever in doubt.
+
+\section{Assignment and Conversions}
+Assignment can be used as an expression. The existing compound operators
+are \code{+=}, \code{-=}, \code{*=}, and \code{/=}; there is no
+\code{\%=}. Useful conversions:
+
+\begin{lstlisting}
+println(tonumber("42"));      // 42
+println(tonumber("3.5"));     // 3.5
+println(tonumber("ff", 16));  // 255
+println(str(42));             // "42"
+println(tostring(nil));       // nil
+println(type([1,2]));         // array
+\end{lstlisting}
+
+An invalid \code{tonumber} returns \code{nil}. \code{str}/\code{tostring}
+produce the textual representation; \code{println} of a string does not
+add quotes, and neither does \code{str} of a string.
+
+% ---------------------------------------------------------------------------
+\chapter{Variables and Scope}
+\label{cap:variaveis}
+
+\section{Globals and Implicit Locals}
+At the top level of a script, an assignment creates or changes a global
+variable:
+
+\begin{lstlisting}
+x = 10;
+println(x);       // 10
+\end{lstlisting}
+
+Inside a function, an assignment to a name that is not a parameter
+creates a \emph{local} variable of that function. Reads look for the
+local first; if it does not exist, they look for the global. To write to a
+global from inside a function, declare it with \code{global}:
+
+\begin{lstlisting}
+global contador;
+contador = 0;
+
+incrementa() {
+    contador += 1;
+}
+
+incrementa();
+println(contador);   // 1
+\end{lstlisting}
+
+Without \code{global}, \code{contador += 1} would create a new local on
+each call. This is essential in the \code{setup()} and \code{draw()}
+callbacks.
+
+\section{Optional Scalar Declarations}
+The language is dynamic by default. Optionally, you can annotate a
+variable's scalar type in C/Rust style. The annotation applies coercion on
+every write:
+
+\begin{lstlisting}
+i32 a = 42;
+u8 porto = 255;
+f32 p = 3.14;
+f64 q = 3.14;
+bool ligado = 1;
+str nome = "Ana";
+int i = 7;          // alias of i32
+float f = 2.5;      // alias of f64
+String s = "abc";   // alias of str
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{L{4.5cm}L{9.5cm}}
+\toprule
+Type & Coercion rule \\
+\midrule
+\code{i8..i64}, \code{isize} & truncates toward zero and checks range \\
+\code{u8..u64}, \code{usize} & truncates and requires non-negative \\
+\code{f32} & rounds to float32 precision \\
+\code{f64} & normal double \\
+\code{bool} & nonzero becomes 1; zero becomes 0 \\
+\code{str} & requires a string \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The type prefix on functions, parameters, and fields is accepted and
+\emph{discarded}: the language remains dynamic at those points. Only
+scalar variables declared with a type have automatic coercion.
+
+\section{Multiple Assignment}
+You can assign several values at once. All values are evaluated before any
+write:
+
+\begin{lstlisting}
+a = 0; b = 0;
+a, b = 3, 4;       // a=3, b=4
+a, b = b, a;       // true swap
+p, q, r = 1, 2, 3;
+\end{lstlisting}
+
+The number of targets must equal the number of values, except when a
+single call provides several values:
+\begin{lstlisting}
+fn par() { return 10, 20; }
+x, y = par();       // x=10, y=20
+\end{lstlisting}
+
+Targets are simple variables; do not use \code{a.b, c = ...}.
+
+\section{Recursion and Local Cleanup}
+Each function call saves and clears its locals, allowing recursion and
+preventing state from leaking between calls:
+
+\begin{lstlisting}
+fatorial(n) {
+    if (n <= 1) { return 1; }
+    return n * fatorial(n - 1);
+}
+println(fatorial(10));   // 3628800
+\end{lstlisting}
+
+\section{REPL}
+In the REPL, globals and functions persist between lines. A function's
+locals do not leak to the top level. Redefining a function or variable is
+allowed; for \code{type}, redefinition clears the type's fields and
+methods.
+
+% ---------------------------------------------------------------------------
+\chapter{Control Flow}
+\label{cap:controle}
+
+\section{if / elseif / else}
+\begin{lstlisting}
+n = 7;
+if (n % 2 == 0) {
+    println("par");
+} elseif (n % 3 == 0) {
+    println("multiplo de 3");
+} else {
+    println("outro");
+}
+\end{lstlisting}
+
+\code{elseif} is a single word; \code{else if} also works. Conditions
+require parentheses.
+
+\section{while}
+\begin{lstlisting}
+i = 0;
+while (i < 3) {
+    println(i);
+    i += 1;
+}
+\end{lstlisting}
+
+\section{Classic for}
+The only \code{for} in v1.0 is the C-style loop:
+
+\begin{lstlisting}
+for (i = 0; i < 5; i += 1) {
+    println(i);
+}
+\end{lstlisting}
+
+All three clauses are optional: \code{for (;;) \{ ... \}} is an infinite
+loop. There is no \code{for k,v in pairs(t)}; to iterate over tables, use
+\code{pairs(t)} and a \code{for} over the resulting list
+(Chapter~\ref{cap:tabelas}).
+
+\section{repeat / until}
+The body executes at least once; the condition is tested at the end:
+
+\begin{lstlisting}
+i = 3;
+repeat {
+    println(i);
+    i -= 1;
+} until (i <= 0);
+\end{lstlisting}
+
+\code{until} accepts the condition with or without parentheses.
+
+\section{break, continue, and goto}
+\code{break} exits the innermost loop. \code{continue} goes to the next
+iteration; in a \code{for} loop, the increment runs before the condition.
+
+\begin{lstlisting}
+for (i = 0; i < 10; i += 1) {
+    if (i == 3) { continue; }
+    if (i == 7) { break; }
+    println(i);
+}
+\end{lstlisting}
+
+Lua-style \code{goto} and labels work within the same function:
+
+\begin{lstlisting}
+i = 0;
+::inicio::
+i += 1;
+if (i < 3) { goto inicio; }
+println(i);   // 3
+\end{lstlisting}
+
+The label must exist in the same function; duplicates are a compilation
+error.
+
+\section{Tail Calls}
+\code{return f(args);} with a direct call to a script function is a
+\emph{proper tail call}: the current frame is reused. This allows
+constant-space tail recursion. Indirect calls and builtins do not use this
+optimization.
+
+% ---------------------------------------------------------------------------
+\chapter{Functions}
+\label{cap:funcoes}
+
+\section{Definition and Call}
+A function can be defined with or without the \code{fn} prefix. Type
+prefixes (\code{void}, \code{int}, \code{i32}, \code{float}, etc.) are
+accepted and ignored.
+
+\begin{lstlisting}
+soma(a, b) {
+    return a + b;
+}
+
+fn dobro(x) { return x * 2; }
+int triplo(int x) { return x * 3; }
+
+println(soma(2, 3));   // 5
+println(dobro(4));     // 8
+println(triplo(3));    // 9
+\end{lstlisting}
+
+Functions are global. Parameters and variables assigned in the body are
+local. A function without \code{return} returns zero values; in a
+single-value context, the result is \code{nil}.
+
+\section{Multiple Returns}
+\begin{lstlisting}
+divmod(a, b) {
+    return a / b, a % b;
+}
+
+q, r = divmod(7, 2);
+println(q);   // 3.5
+println(r);   // 1
+\end{lstlisting}
+
+In a single-value context, only the first return value is used. In
+multiple assignment, values are distributed in order; missing values
+become \code{nil}, and extras are discarded. \code{return f();} forwards
+all values from the callee (tail call).
+
+\section{Varargs}
+The last parameter can be \code{...}. Inside the function, \code{...}
+represents the extra arguments.
+
+\begin{lstlisting}
+soma_var(first, ...) {
+    total = first;
+    for (i = 0; i < select("#", ...); i += 1) {
+        total += select(i + 1, ...);
+    }
+    return total;
+}
+
+println(soma_var(1, 2, 3, 4));   // 10
+\end{lstlisting}
+
+\code{select("\#", ...)} returns the number of extras;
+\code{select(n, ...)} returns from the n-th onward (1-based; negative
+counts from the end). \code{unpack(lista[, i[, j]])} returns the elements
+(0-based indices). \code{...} can only be the last argument of a call or
+of a \code{return}; in that position it expands to all values. Otherwise,
+\code{...} in an ordinary expression is the first extra value.
+
+\section{Functions as Values}
+\begin{lstlisting}
+dobro(n) { return n * 2; }
+f = dobro;
+println(f(4));        // 8
+println(f == dobro);  // 1 (same function)
+println(f);           // <function dobro>
+\end{lstlisting}
+
+Calling a variable that holds a function uses an indirect call.
+Functions cannot be used in arithmetic or converted to scalar types.
+
+\section{Anonymous Closures}
+An anonymous function \code{fn(...) \{ ... \}} captures local variables
+from the enclosing scope by reference:
+
+\begin{lstlisting}
+contador() {
+    n = 0;
+    return fn() {
+        n += 1;
+        return n;
+    };
+}
+
+c1 = contador();
+c2 = contador();
+println(c1());   // 1
+println(c1());   // 2
+println(c2());   // 1
+\end{lstlisting}
+
+Two closures created in the same frame share the same upvalue.
+
+\paragraph{v1.0 limitations.}
+Only anonymous functions capture. Named functions and methods do not
+capture outer locals; use an inner anonymous function. Capture is lexical
+but not forward-looking: declare and assign the local before creating the
+closure. There is no IIFE: \code{fn(x)\{...\}(1)} is not supported;
+assign it to a variable first. Scalar coercion of a captured local is not
+reapplied on reads/writes through the upvalue.
+
+\section{global inside Functions}
+As seen in Chapter~\ref{cap:variaveis}, use \code{global nome;} to share
+state between functions and callbacks. Without it, assignment creates a
+local.
+
+\section{pcall and Traceback}
+\label{sec:pcall}
+\code{pcall(f, ...)} runs \code{f(...)} and catches runtime errors. It
+returns a 1x2 matrix: \code{[ok, value]}.
+
+\begin{lstlisting}
+fn quebra() { return 1 / 0; }
+
+r = pcall(quebra);
+println(r[0]);   // 0 (failure)
+println(r[1]);   // message + traceback
+
+r = pcall(fn(a, b) { return a + b; }, 2, 3);
+println(r[0]);   // 1
+println(r[1]);   // 5
+\end{lstlisting}
+
+If the first argument is not a function, the result is
+\code{[0, "pcall: valor nao e uma funcao"]}. \code{pcall} is a special
+call form, not a value: do not write \code{g = pcall}. Unhandled errors
+show the line and frames in the REPL/runner.
+
+\section{Builtins as Functions}
+Builtins such as \code{println}, \code{len}, \code{str}, \code{abs},
+and \code{sqrt} are called by name. They are not first-class values in
+v1.0; to pass an operation as an argument, wrap it in an anonymous
+function:
+
+\begin{lstlisting}
+aplica(f, x) { return f(x); }
+println(aplica(fn(v) { return v * v; }, 5));   // 25
+\end{lstlisting}
+
+% ---------------------------------------------------------------------------
+\chapter{Strings}
+\label{cap:strings}
+
+\section{Basic Operations}
+\begin{lstlisting}
+s = "Ola, mundo";
+println(len(s));       // 11
+println(s[0]);         // O
+println(s[-1]);        // o
+println(upper(s));     // HELLO, WORLD
+println(lower(s));     // hello, world
+println(trim("  x  ")); // x
+println(rep("ab", 3)); // ababab
+println(reverse(s));   // reversed text
+\end{lstlisting}
+
+Strings are immutable: \code{s[0] = "X"} is an error. Negative indices
+count from the end. \code{len} counts characters (bytes in internal
+storage; for UTF-8 code points use \code{utf8\_len}).
+
+\section{Slices}
+Slices work on strings and lists. The start is inclusive and the end is
+\emph{exclusive}; bounds are clamped and do not raise an error.
+
+\begin{lstlisting}
+s = "abcdef";
+println(s[1:4]);   // bcd
+println(s[:3]);    // abc
+println(s[3:]);    // def
+println(s[-2:]);   // ef
+\end{lstlisting}
+
+\code{sub(s, i[, j])} is different: it uses 0-based indices and the end
+is \emph{inclusive}. See Appendix~\ref{ap:builtins}.
+
+\section{Comparison and Concatenation}
+\code{+} concatenates two strings. \code{==} and \code{!=} compare
+content; \code{< > <= >=} are lexicographic between two strings.
+Comparing a string with a number is an error.
+
+\begin{lstlisting}
+println("abc" + "def");   // abcdef
+println("abc" == "abc");  // 1
+println("abc" != "abd");  // 1
+\end{lstlisting}
+
+\section{Conversion and Formatting}
+\code{str(x)} and \code{tostring(x)} convert to text.
+\code{format(fmt, ...)} returns a formatted string; \code{printf} prints
+it. The accepted conversions are \code{\%s}, \code{\%d}, \code{\%i},
+\code{\%f}, \code{\%g}, \code{\%j}, \code{\%c}, and \code{\%\%}.
+There is no width, precision, or flags: \code{\%.2f} is an error.
+
+\begin{lstlisting}
+nome = "Ana";
+idade = 30;
+msg = format("%s tem %d anos", nome, idade);
+println(msg);              // Ana tem 30 anos
+printf("[%s]\n", "ok");    // [ok]
+\end{lstlisting}
+
+\section{Arduino String API}
+The functions below are free functions (not methods) and preserve string
+immutability; they all accept text and return text or a number depending
+on the operation.
+
+\begin{lstlisting}
+s = "  Arduino  ";
+println(trim(s));                    // Arduino
+println(String(3.14159, 2));         // 3.14
+println(String(255, 16));            // ff
+println(charAt("abc", 1));           // b
+println(indexOf("arduino", "du"));   // 2
+println(toUpperCase("abc"));         // ABC
+
+buf = [0, 0, 0, 0];
+n = toCharArray("Az", buf);          // 2; buf = [65, 122, 0, 0]
+println(buf[0]);                     // 65
+\end{lstlisting}
+
+Without a buffer, \code{getBytes}/\code{toCharArray} return a 1D list of
+bytes; with a buffer, they return the number of bytes copied.
+\code{getBytes} does not write a NUL; \code{toCharArray} writes a NUL if
+space remains. \code{String(float)} uses 2 decimal places;
+\code{String(int, base)} accepts base 2..36. There are also
+\code{compareTo}, \code{c\_str}, \code{endsWith}, \code{equals},
+\code{equalsIgnoreCase}, \code{lastIndexOf}, \code{length}, \code{remove},
+\code{replace}, \code{reserve}, \code{setCharAt}, \code{startsWith},
+\code{substring}, \code{toDouble}, \code{toFloat}, \code{toInt},
+\code{toLowerCase}, and \code{toUpperCase}; \code{concat(s, ...)}
+concatenates text when the first argument is a string.
+
+\section{Patterns}
+The language implements a subset of Lua patterns. Indices are 0-based; a
+failed \code{match} returns \code{""} (empty string) for compatibility.
+
+\begin{lstlisting}
+println(match("hello 123", "%d+"));       // 123
+println(match("abc123", "(%a+)(%d+)"));   // abc (first capture)
+println(gsub("a1b2", "%d", "#"));         // a#b#
+println(gsub("abc", "(%a)", "[%1]"));     // [a][b][c]
+
+lista = gmatch("a1 b22", "%d+");          // list ["1", "22"]
+for (i = 0; i < len(lista); i += 1) {
+    println(lista[i]);
+}
+\end{lstlisting}
+
+Supported classes: \code{. \%a \%c \%d \%g \%l \%p \%s \%u \%w \%x \%z}
+(uppercase inverts), sets \code{[...]} with ranges and \code{\^{}},
+quantifiers \code{* + - ?}, anchors \code{\^{} \$}, captures
+\code{(...)}, \code{\%bxy}, \code{\%f[set]}, and backreferences
+\code{\%1..\%9}. \code{gsub} accepts textual replacement only.
+
+\section{UTF-8}
+\begin{lstlisting}
+s = "cafe";
+println(utf8_len("caf\u00e9"));       // 4 code points (example)
+println(utf8_codepoint("A", 0));      // 65
+println(utf8_char(65));               // A
+\end{lstlisting}
+
+\code{utf8\_len(s)} counts code points; \code{utf8\_codepoint(s[, i])}
+returns the code point at byte \code{i} or \code{-1};
+\code{utf8\_char(cp)} encodes a valid code point. The source above uses
+\code{\textbackslash u} only as an illustration; the v1.0 lexer does not
+interpret \code{\textbackslash u}, so prefer literal UTF-8 strings.
+
+% ---------------------------------------------------------------------------
+\chapter{Lists and Matrices}
+\label{cap:listas}
+
+\section{1D Lists}
+A list is a 1xN matrix, indexed from 0.
+
+\begin{lstlisting}
+v = [10, 20, 30];
+println(v[0]);        // 10
+println(v[-1]);       // 30
+println(len(v));      // 3
+
+v[1] = 99;
+append(v, 40);        // mutates and returns the list
+println(v);           // 1x4 matrix: 10, 99, 30, 40
+\end{lstlisting}
+
+\code{append} only works on 1D lists. \code{sort(v)} sorts numbers in
+ascending order (in place); \code{concat(v[, sep])} joins the elements
+into text.
+
+\section{Slices and Copies}
+Slices return a \emph{copy} (mutating the copy does not change the
+original). The end is exclusive.
+
+\begin{lstlisting}
+v = [0, 1, 2, 3, 4];
+w = v[1:4];       // [1, 2, 3]
+println(len(w));  // 3
+w[0] = 99;
+println(v[1]);    // 1 (original intact)
+\end{lstlisting}
+
+Assigning to a slice (\code{v[1:3] = ...}) is not supported.
+
+\section{2D Matrices}
+Lists of lists form matrices. \code{mat\_index(M, i, j)} uses 1-based
+indices (the linear algebra convention), while direct indexing
+\code{M[i][j]} uses 0-based indices.
+
+\begin{lstlisting}
+M = [[1, 2], [3, 4]];
+println(M[0][1]);          // 2
+println(mat_index(M, 1, 2)); // 2
+println(rows(M));          // 2
+println(cols(M));          // 2
+\end{lstlisting}
+
+Available operations: \code{det}, \code{trace}, \code{inv},
+\code{transpose}, \code{dot}, \code{cross}, \code{matmul},
+\code{identity}, \code{zeros}, \code{eigvals}, and \code{eigvecs}. The
+operators \code{+ - * /} and \code{@} (scalar) work on matrices.
+
+% ---------------------------------------------------------------------------
+\chapter{Tables}
+\label{cap:tabelas}
+
+\section{Creating and Accessing}
+Tables are key-value maps with reference semantics. The literal uses
+\code{key = value} pairs; literal keys are identifiers.
+
+\begin{lstlisting}
+pessoa = {nome = "Ana", idade = 30};
+println(pessoa.nome);          // Ana
+println(pessoa["idade"]);      // 30
+pessoa.idade += 1;
+pessoa["cidade"] = "Recife";   // dynamic key
+println(pessoa.cidade);        // Recife
+\end{lstlisting}
+
+Valid keys are text, number, or boolean. A missing key returns
+\code{nil}; assigning \code{nil} deletes the key.
+
+\begin{lstlisting}
+println(pessoa.cargo);         // nil
+println(has(pessoa, "cargo")); // 0
+pessoa.cidade = nil;           // deletes
+println(has(pessoa, "cidade"));// 0
+\end{lstlisting}
+
+\section{Equality and Reference}
+Two tables are equal only if they are the same table (identity):
+\begin{lstlisting}
+a = {x = 1};
+b = a;
+c = {x = 1};
+println(a == b);   // 1
+println(a == c);   // 0
+\end{lstlisting}
+
+\section{Iteration}
+In v1.0, \code{pairs(t)} returns a list of pairs \code{[k, v]};
+\code{ipairs(t)} returns the values of \code{t[0]}, \code{t[1]}, ...
+until the first missing key; \code{next(t[, k])} returns the next pair or
+an empty list at the end. The order is canonical/deterministic.
+
+\begin{lstlisting}
+t = {a = 1, b = 2};
+ps = pairs(t);
+for (i = 0; i < len(ps); i += 1) {
+    par = ps[i];
+    println(par[0], "=", par[1]);
+}
+\end{lstlisting}
+
+You can also iterate over sorted keys:
+\begin{lstlisting}
+ks = keys(t);
+for (i = 0; i < len(ks); i += 1) {
+    println(ks[i], t[ks[i]]);
+}
+\end{lstlisting}
+
+\section{Textual Representation}
+\code{println(t)} shows \code{\{key: value\}} with sorted keys. Text keys
+appear in quotes; numbers and booleans do not.
+
+\section{Metatables}
+Tables and structs can have a metatable; see
+Chapter~\ref{cap:metatables}. Table operations also accept
+\code{rawget}, \code{rawset}, \code{has}, \code{remove}, \code{keys},
+\code{len}, and \code{collectgarbage}.
+
+% ---------------------------------------------------------------------------
+\chapter{Structs and Classes}
+\label{cap:structs}
+
+\section{Structs}
+A struct groups fields and methods. The definition ends with \code{;}.
+
+\begin{lstlisting}
+type Ponto {
+    x;
+    y;
+
+    void mover(dx, dy) {
+        x += dx;
+        y += dy;
+    }
+};
+
+p = Ponto{1, 2};
+p.mover(3, 4);
+println(p.x);   // 4
+println(p.y);   // 6
+println(p);     // Ponto(x=4, y=6)
+\end{lstlisting}
+
+Inside a method, fields are accessed directly by name (\code{x},
+\code{y}), without \code{this.}. If you need a local variable with the
+same name as a field, choose another name.
+
+The literal \code{Tipo\{v1, v2, ...\}} requires the exact field count, in
+definition order (root to leaf). You can also declare
+\code{Ponto p = \{1, 2\};}.
+
+\section{Classes and Inheritance}
+\code{class} is a struct with single inheritance, a constructor, and
+\code{super}.
+
+\begin{lstlisting}
+class Conta {
+    saldo;
+    init(s) { saldo = s; }
+    depositar(v) { saldo += v; return saldo; }
+}
+
+class Poupanca extends Conta {
+    bonus;
+    init(s, b) {
+        super.init(s);
+        bonus = b;
+    }
+    depositar(v) {
+        saldo += v + bonus;
+        return saldo;
+    }
+}
+
+c = new Conta(100);
+p = new Poupanca(100, 5);
+println(c.depositar(10));   // 110
+println(p.depositar(10));   // 115
+\end{lstlisting}
+
+\code{new T(args)} requires an \code{init} method (own or inherited).
+Fields are flattened in root$\rightarrow$leaf order; methods resolve from
+child to parent. \code{super.m(args)} starts at the parent and uses the
+same object.
+
+\section{Reference and Equality}
+Instances are shared by reference: \code{b = a} points to the same
+object. The current implementation compares structs/classes
+\emph{structurally} (type and fields); do not rely on identity to
+distinguish two instances with the same values. For explicit identity,
+add an \code{id} field and compare it.
+
+\section{Structs versus Tables}
+Use structs when the set of fields is fixed and part of the type; use
+tables for dynamic maps. Structs have methods and inheritance; tables have
+dynamic keys and more general metatables.
+
+% ---------------------------------------------------------------------------
+\chapter{Metatables and Garbage Collection}
+\label{cap:metatables}
+
+\section{setmetatable and getmetatable}
+\code{setmetatable(t, mt)} associates a metatable with a table or struct;
+\code{nil} removes it. \code{getmetatable(t)} returns the metatable or
+\code{nil}.
+
+\section{Supported Metamethods}
+\begin{center}
+\begin{tabular}{L{3.2cm}L{10.5cm}}
+\toprule
+Metamethod & Effect \\
+\midrule
+\code{\_\_index} & lookup when the key/field is missing; may be a table or function \\
+\code{\_\_call} & makes the object callable; the object becomes the first argument \\
+\code{\_\_add} & covers \code{a + b}, \code{a + k}, \code{x = x + b}, and \code{x = x + k} \\
+\code{\_\_eq}, \code{\_\_ne} & equality when both operands have the same type \\
+\code{\_\_tostring} & representation used by \code{println}, \code{str}, \code{printf \%s}, \code{error}/\code{assert} \\
+\code{\_\_gc} & best-effort finalizer at script end or in \code{collectgarbage()} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Examples:
+\begin{lstlisting}
+base = {saudacao = "ola"};
+mt = {__index = base};
+obj = setmetatable({nome = "Ana"}, mt);
+println(obj.saudacao);        // hello
+
+mtCall = {__call = fn(self, x) { return self.base + x; }};
+soma = setmetatable({base = 10}, mtCall);
+println(soma(5));             // 15
+
+mtAdd = {__add = fn(a, b) { return a.x + b.x; }};
+a = setmetatable({x = 2}, mtAdd);
+b = setmetatable({x = 3}, mtAdd);
+println(a + b);               // 5
+
+mtStr = {__tostring = fn(self) { return "Pessoa(" + self.nome + ")"; }};
+p = setmetatable({nome = "Ana"}, mtStr);
+println(p);                   // Pessoa(Ana)
+\end{lstlisting}
+
+\section{Cycle Collection}
+Tables, lists, structs, functions, and closure environments use reference
+counting and a cycle collector based on \emph{trial deletion}. The
+collector runs at the end of each script/REPL entry and on demand:
+
+\begin{lstlisting}
+t = {};
+t.self = t;
+t = nil;
+println(collectgarbage());   // >= 1
+
+vivo = {};
+vivo.self = vivo;
+println(collectgarbage());   // 0 (still reachable)
+\end{lstlisting}
+
+The collector is not concurrent. Cycles kept alive by stacks of paused
+threads/coroutines are treated as roots and may not be collected. The
+bytecode of chunks loaded by \code{load}/\code{dofile} accumulates until
+the end of execution.
+
+\section{Limitations}
+There is still no \code{\_\_newindex}, \code{\_\_sub},
+\code{\_\_mul}, \code{\_\_div}, \code{\_\_mod}, \code{\_\_pow},
+\code{\_\_unm}, \code{\_\_lt}, \code{\_\_le}, \code{\_\_concat},
+\code{\_\_len}, \code{\_\_pairs}, \code{\_\_metatable}, or weak
+tables. Metatables work on tables and structs, not on lists/strings.
+
+% ---------------------------------------------------------------------------
+\chapter{Modules and Dynamic Code}
+\label{cap:modulos}
+
+\section{include}
+\code{include("arquivo");} inserts the file contents at the directive
+point before compilation. The path is relative to the working directory;
+each file is included once per execution, which also breaks cycles. The
+directive requires parentheses and a string literal; the old \code{\#}
+form is not accepted.
+
+\begin{lstlisting}
+include("scripts/libs/showtext.xlb");
+showtext("Ola");
+\end{lstlisting}
+
+\section{.xlb Libraries}
+\code{.xlb} files are pure-language code libraries. \code{include}
+embeds the content; functions and constants become available in the
+script. Canonical example: \file{scripts/libs/showtext.xlb} and
+\file{scripts/script\_26\_biblioteca\_xlb.isi}.
+
+\section{require}
+\code{require("arquivo")} loads an entire script as a module. The body
+runs once; the file's functions and variables become globals; the body's
+\code{return} value (or \code{0}) is returned and cached. \code{require}
+is resolved at compile time and is not a first-class value.
+
+\begin{lstlisting}
+r = require("scripts/libs/util.xlb");
+println(util_dobro(21));
+r2 = require("scripts/libs/util.xlb");  // cached
+\end{lstlisting}
+
+A cycle \code{A -> B -> A} is a compilation error. A missing file or
+invalid syntax is also a compilation error (not catchable by
+\code{pcall}).
+
+\section{load and dofile}
+\code{load(codigo[, nome])} compiles a string as a chunk and returns a
+function. In turn, \code{dofile(caminho)} reads, compiles, and executes a
+file in isolation, returning the \code{return} value (or \code{0}).
+
+\begin{lstlisting}
+f = load("return 1 + 2;");
+println(f());                         // 3
+r = dofile("tests/fixtures/l14_chunk.txt");
+\end{lstlisting}
+
+\code{eval(codigo)} is pure sugar for \code{load(codigo)()}: it compiles
+and runs the chunk immediately, returning the result. Both require
+\code{allow\_modules} and \code{allow\_fileio} in the sandbox.
+Loaded chunks do not capture the caller's locals; only locals from the
+same lexical compilation scope. Do not use \code{load}/\code{dofile}
+concurrently with threads.
+
+\section{Native .mod Modules}
+\code{import("arquivo.mod")} loads a JSON manifest that points to a
+shared library (\code{.so}/\code{.dylib}). Native functions and variables
+enter the global namespace.
+
+\begin{lstlisting}
+import("scripts/modules/motor_controller.mod");
+println(MotorSpeedLimit);
+MotorSpeedLimit = 5000;
+r = Motor_Start(1500);
+res = Motor_Read();
+\end{lstlisting}
+
+Accepted FFI types: signed and unsigned integers, \code{float32},
+\code{float64}, \code{bool}, \code{string}, and \code{void}; at most 3
+parameters. Variables with \code{readonly: true} cannot be written. See
+\file{docs/linguagem.md} for the complete manifest format and module
+lifecycle.
+
+% ---------------------------------------------------------------------------
+\chapter{Error Handling}
+\label{cap:erros}
+
+\section{Compilation and Runtime Errors}
+Compilation errors prevent execution and include the line. Runtime errors
+can be caught with \code{pcall}. \code{error(msg)} raises an error;
+\code{assert(cond[, msg])} raises if the condition is false.
+
+\begin{lstlisting}
+fn valida(x) {
+    assert(x > 0, "x must be positive");
+    return x;
+}
+
+r = pcall(valida, -1);
+println(r[0]);   // 0
+println(r[1]);   // x must be positive (line ...)
+\end{lstlisting}
+
+\section{Traceback}
+When an error is not caught, the output shows the message and frames:
+\begin{lstlisting}[language=bash]
+ERRO EM TEMPO DE EXECUCAO: Divisao por zero (linha 7)
+  em quebra (linha 10)
+  em main (linha 14)
+\end{lstlisting}
+
+\code{pcall} returns the message already including the traceback in
+\code{r[1]}.
+
+\section{No try/catch}
+v1.0 has no \code{try}/\code{catch}/\code{finally} or \code{throw}.
+Use \code{pcall} to catch errors and \code{error} to raise them. For
+resource cleanup, close files explicitly or rely on automatic closing at
+the end of the script/REPL.
+
+\section{Sandbox}
+The embedding API can limit instructions and disable I/O and modules. In
+the runner/REPL, the REPL growth limits are configurable through the
+environment. \code{load}/\code{dofile}/\code{include}/
+\code{require}/\code{import(...)} respect the sandbox permissions.
+
+% ---------------------------------------------------------------------------
+\chapter{Threads and Coroutines}
+\label{cap:concorrencia}
+
+\section{System Threads}
+A function declared with \code{thread} runs on a system thread. It does
+not receive parameters.
+
+\begin{lstlisting}
+global n;
+n = 0;
+
+thread contador() {
+    while (1) {
+        n += 1;
+        delay(100);   // milliseconds
+    }
+}
+
+start contador();
+delay(350);
+stop contador();
+println(n);           // approximately 3
+\end{lstlisting}
+
+\code{start}/\code{stop}/\code{pause}/\code{resume} control the thread.
+Globals are shared without a lock; avoid concurrent writes to the same
+variable. Graphics and input can only be used on the main thread. A
+successful script waits for threads to finish; on error, they are
+terminated.
+
+\section{Cooperative Coroutines}
+Coroutines use their own fixed-stack VM and are independent of system
+threads.
+
+\begin{lstlisting}
+fn conta() {
+    i = 0;
+    while (i < 3) {
+        coyield(i);
+        i += 1;
+    }
+    return "fim";
+}
+
+co = cocreate(conta);
+println(costatus(co));    // new
+
+r = coresume(co);
+println(r[0], r[1]);      // 1 0
+r = coresume(co);
+println(r[0], r[1]);      // 1 1
+r = coresume(co);
+println(r[0], r[1]);      // 1 2
+r = coresume(co);
+println(r[0], r[1]);      // 1 fim
+println(costatus(co));    // dead
+\end{lstlisting}
+
+\code{coresume} returns \code{[ok, value]}. \code{coyield(v)} suspends
+and returns \code{v}; outside a coroutine it is an error. \code{costatus}
+returns \code{"novo"}, \code{"rodando"}, \code{"suspenso"}, or
+\code{"morto"}. Each coroutine uses a fixed stack; create few in embedded
+environments. There is no multi-value \code{coyield} and no
+\code{coyield} inside \code{pcall}.
+
+% ---------------------------------------------------------------------------
+\chapter{Standard Library}
+\label{cap:stdlib}
+
+The library consists of global builtins. There are no \code{math.*},
+\code{string.*}, \code{table.*}, etc.\ namespaces in v1.0. Appendix
+~\ref{ap:builtins} provides a quick reference; the most used functions
+are below.
+
+\section{Console and Conversion}
+\begin{lstlisting}
+println("texto", 42, nil);     // text 42 nil
+printf("%s=%d\n", "x", 7);     // x=7
+nome = input("nome? ");        // reads a line from stdin
+println(type(nome));           // string
+println(tostring(42));         // 42
+println(tonumber("ff", 16));   // 255
+\end{lstlisting}
+
+\code{println} accepts several arguments and prints them one by one,
+separated by spaces. \code{printf} does not add a newline; use
+\code{\textbackslash n}.
+
+\section{Strings, Lists, and Tables}
+\begin{lstlisting}
+s = "  Ola  ";
+println(upper(s));       // "  OLA  "
+println(trim(s));        // "Ola"
+println(sub("abcdef", 1, 3)); // bcd (inclusive end)
+println(byte("A"));      // 65
+println(char(65, 66));   // AB
+println(format("%02d", 7));   // error: no flags/width
+
+v = [3, 1, 2];
+sort(v);                 // [1, 2, 3]
+println(concat(v, "-")); // 1-2-3
+
+t = {a = 1};
+println(has(t, "a"));    // 1
+println(keys(t));        // sorted list
+\end{lstlisting}
+
+\section{Mathematics and Complex Numbers}
+\begin{lstlisting}
+println(abs(-3));        // 3
+println(sqrt(9));        // 3
+println(pow(2, 10));     // 1024
+println(floor(3.7));     // 3
+println(ceil(3.1));      // 4
+println(round(3.5));     // 4
+println(min(4, 2, 9));   // 2
+println(max(4, 2, 9));   // 9
+println(random());       // [0, 1)
+println(random_int(1, 6));
+
+z = 3 + 4j;
+println(abs(z));         // 5
+println(real(z));        // 3
+println(imag(z));        // 4
+println(conj(z));        // 3-4j
+\end{lstlisting}
+
+\subsection*{C99 math.h}
+In addition to the basic functions, the library exposes a C99 subset of
+\file{math.h} for \code{double} (complex numbers only where support
+already existed).
+
+\begin{lstlisting}
+println(cbrt(27));          // 3
+println(hypot(3, 4));       // 5
+println(ldexp(0.5, 4));     // 8
+println(fma(2, 3, 4));      // 10
+a, b = frexp(8);            // 0.5 and 4
+println(a);                 // 0.5
+println(b);                 // 4
+println(fpclassify(NAN));   // 0 (FP_NAN)
+println(isfinite(INF));     // 0
+println(M_PI);              // ~3.14159
+\end{lstlisting}
+
+The list includes \code{acos}, \code{asin}, \code{atan}, \code{acosh},
+\code{asinh}, \code{atanh}, \code{cosh}, \code{sinh}, \code{tanh},
+\code{exp2}, \code{expm1}, \code{log2}, \code{log1p}, \code{cbrt},
+\code{erf}, \code{erfc}, \code{tgamma}, \code{lgamma}, \code{trunc},
+\code{rint}, \code{nearbyint}, \code{fabs}, \code{hypot}, \code{fdim},
+\code{fmax}, \code{fmin}, \code{copysign}, \code{nextafter},
+\code{remainder}, \code{lround}, \code{llround}, \code{lrint},
+\code{llrint}, \code{ilogb}, \code{logb}, \code{ldexp}, \code{scalbn},
+\code{scalbln}, \code{fma}, \code{nan}, \code{fpclassify}, \code{isfinite},
+\code{isinf}, \code{isnan}, \code{isnormal}, \code{signbit},
+\code{isgreater}, \code{isgreaterequal}, \code{isless},
+\code{islessequal}, \code{islessgreater}, and \code{isunordered}.
+\code{frexp}, \code{modf}, and \code{remquo} return multiple values.
+
+Constants are literals resolved at compile time and cannot be assigned: \code{M\_E}, \code{M\_LOG2E}, \code{M\_LOG10E}, \code{M\_LN2},
+\code{M\_LN10}, \code{M\_PI}, \code{M\_PI\_2}, \code{M\_PI\_4},
+\code{M\_1\_PI}, \code{M\_2\_PI}, \code{M\_2\_SQRTPI}, \code{M\_SQRT2},
+\code{M\_SQRT1\_2}, \code{M\_PHI}; aliases \code{PI}, \code{E},
+\code{TAU}, \code{PHI}, \code{DEG\_TO\_RAD}, \code{RAD\_TO\_DEG},
+\code{INF}, \code{NAN}; limits \code{HUGE\_VAL}, \code{INFINITY},
+\code{MAXFLOAT}, \code{FLT\_MAX}, \code{DBL\_MAX}, \code{FLT\_EPSILON},
+\code{DBL\_EPSILON}; classification \code{FP\_NAN} (0),
+\code{FP\_INFINITE} (1), \code{FP\_ZERO} (2), \code{FP\_SUBNORMAL} (3),
+\code{FP\_NORMAL} (4); and \code{MATH\_ERRNO} (1),
+\code{MATH\_ERREXCEPT} (2), \code{math\_errhandling} (3).
+
+\section{Time}
+\begin{lstlisting}
+println(time());        // seconds since the epoch
+println(clock());       // milliseconds since startup
+println(os_date());     // formatted local date/time
+\end{lstlisting}
+
+\section{Files}
+Handles are monotonic integers; a failing \code{fopen} returns \code{0}
+(the \code{NULL} constant). Argument order follows C: data first, file
+last, except \code{fprintf(f, fmt, ...)}.
+
+\begin{lstlisting}
+f = fopen("dados.txt", "w");
+if (f == NULL) {
+    println("nao abriu");
+} else {
+    fputs("linha 1\n", f);
+    fprintf(f, "%s=%d\n", "x", 42);
+    fclose(f);
+}
+
+r = fopen("dados.txt", "r");
+println(fread(100, r));
+println(fgets(r));
+fclose(r);
+\end{lstlisting}
+
+\section{Sound}
+\begin{lstlisting}
+sound_backend("device");
+h = sound_load("a.wav");
+sound_play(h);
+sound_set_volume(h, 0.5);
+delay(1000);
+sound_stop(h);
+sound_unload(h);
+\end{lstlisting}
+
+Real audio output is optional: use \code{sound\_backend("device")} in the
+script or \code{MYINTERP\_SOUND=device}. Without that (or without raylib),
+the backend is software and deterministic. \code{sound\_backend("software")}
+returns to silent mode; \code{MYINTERP\_SOUND=software} also forces
+software.
+
+% ---------------------------------------------------------------------------
+\chapter{Graphics}
+\label{cap:graficos}
+
+The model is inspired by Processing. The \code{software} backend is
+headless and writes \code{.ppm} images; the \code{raylib} backend opens a
+real window when compiled with support.
+
+\section{setup and draw}
+If the script defines \code{setup()}, it runs before any other statement.
+Use \code{setDraw(fn)} (or \code{onDraw}) to register the frame
+callback.
+
+\begin{lstlisting}
+void setup() {
+    size(320, 200);
+    setDraw(draw);
+}
+
+void draw() {
+    background(20, 20, 40);
+    fill(255, 160, 0);
+    circle(mouseX(), mouseY(), 20);
+    text("q para sair", 5, 5);
+    if (keyPressed() && key() == "q") { quit(); }
+}
+\end{lstlisting}
+
+Without \code{draw}/\code{setDraw}, use the manual loop:
+\begin{lstlisting}
+size(80, 60);
+i = 0;
+while (i < 60 && show()) {
+    background(0);
+    fill(255, 200, 0);
+    circle(10 + i, 30, 12);
+    i += 1;
+}
+\end{lstlisting}
+
+\section{Drawing}
+\begin{lstlisting}
+size(80, 60);
+background(20, 20, 40);
+fill(255, 128, 0);
+stroke(255, 255, 255);
+strokeWeight(1);
+noFill(); noStroke();
+rect(5, 5, 30, 20);       // top-left corner
+circle(60, 15, 20);       // center, diameter
+ellipse(40, 45, 30, 14);  // center, axes
+line(0, 59, 79, 0);
+point(79, 59);
+textSize(1);
+font("8x8");              // "8x8" (default) or "5x7"
+fill(255);
+text("Isiliel", 5, 40);   // "\n" breaks the line
+show();
+save_screen("out.ppm");   // .ppm; .png with raylib
+println(width(), height());
+println(frameCount());
+\end{lstlisting}
+
+\section{Input and Images}
+\begin{lstlisting}
+println(mouseX(), mouseY());
+println(mousePressed());
+println(keyPressed());
+println(key());
+
+img = loadImage("foto.ppm");
+image(img, 10, 10);
+image(img, 10, 10, 64, 40);
+println(imageWidth(img), imageHeight(img));
+unloadImage(img);
+\end{lstlisting}
+
+Multiple keys in the same frame are coalesced: \code{key()} returns only
+the last one. ESC and the X button do not close the window; use
+\code{quit()} or Ctrl+C. Drawing without \code{size()}, or calling
+\code{backend()} after \code{size()}, raises an error with the line
+number.
+
+% ---------------------------------------------------------------------------
+\chapter{Embedding the Interpreter in C++}
+\label{cap:embed}
+
+The public API is in \file{interp.h}. Minimal example:
+
+\begin{lstlisting}[language=C++]
+#include "interp.h"
+
+int main() {
+    InterpOptions opts;
+    opts.capture = true;          // stdout -> result.output
+    opts.step_limit = 100000;     // instruction budget
+    opts.allow_fileio = false;    // sandbox
+    opts.allow_modules = false;
+
+    InterpResult r = interp_run("println(6 * 7);", opts);
+    if (!r.ok) {
+        // r.error contains the message
+        return 1;
+    }
+    // r.output contains "42\n"
+    return 0;
+}
+\end{lstlisting}
+
+\section{Options}
+\begin{center}
+\begin{tabular}{L{4cm}L{10cm}}
+\toprule
+Field & Meaning \\
+\midrule
+\code{verbose} & prints execution banners \\
+\code{capture} & redirects stdout to \code{InterpResult.output} \\
+\code{step\_limit} & maximum VM instructions (0 = no limit) \\
+\code{allow\_fileio} & enables \code{fopen}, \code{include}, \code{require} \\
+\code{allow\_modules} & enables \code{import(...)} and native modules \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{API Functions}
+\begin{itemize}
+  \item \code{interp\_run(source, opts)}: compiles and runs; always
+        restores threads, files, screen, modules, and sandbox on exit.
+  \item \code{interp\_register\_fn(nome, arity, handler)}: registers a
+        host function as a builtin. Call before running.
+  \item \code{interp\_set\_output(std::ostream* os)}: redirects output;
+        \code{nullptr} restores \code{std::cout}.
+  \item \code{interp\_reset()}: clears symbols, bytecode, threads,
+        files, screen, and modules for the next single-state run.
+  \item \code{run\_pipeline}, \code{run\_file}, \code{disasm\_file}:
+        low-level variants used by the CLI.
+\end{itemize}
+
+\section{Builtin Signature}
+A registered function receives an array of \code{Value}, the argument
+count, and a pointer to the result. See \file{vm.h} for
+\code{BuiltinHandler} and \file{defs.h} for \code{Value}. Errors should
+be thrown as \code{std::runtime\_error}; the VM appends the line.
+
+% ---------------------------------------------------------------------------
+\chapter{Tools and Debugging}
+\label{cap:ferramentas}
+
+\section{Disassembler}
+\begin{lstlisting}[language=bash]
+./build/isirun --disasm script.isi
+\end{lstlisting}
+
+Shows the bytecode with opcode names and operands. Useful for
+understanding optimizations and debugging the VM.
+
+\section{Tests and Sanitizers}
+\begin{lstlisting}[language=bash]
+make test
+make asan
+make fuzz FUZZ_ITERS=2000
+make bench
+\end{lstlisting}
+
+The suite covers scripts, expected errors, the REPL, the disassembler,
+and the API. The fuzzer performs deterministic mutation of scripts;
+ASan/UBSan check memory and undefined behavior. The benchmark compares
+against Lua 5.4 and writes results to \file{bench/comparacao.html}.
+
+\section{Project Structure}
+\begin{center}
+\begin{tabular}{L{4cm}L{10cm}}
+\toprule
+File & Role \\
+\midrule
+\file{lexer.cpp/h} & lexical analysis \\
+\file{compiler.cpp/h} & parser and bytecode generation \\
+\file{vm.cpp/h} & stack VM and builtins \\
+\file{symbols.cpp/h} & symbol table and scopes \\
+\file{interp.cpp/h} & pipeline and embedding API \\
+\file{run.cpp} & CLI and REPL \\
+\file{graphics/} & graphics HAL and backends \\
+\file{scripts/} & runnable examples \\
+\file{tests/} & automated suite \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Debugging in VS Code}
+The project includes an \code{F5} configuration to build and debug a
+script. The debug build uses \code{-O0 -g3}; for performance use
+\code{make release}.
+
+% ---------------------------------------------------------------------------
+\chapter{Known Limitations and Differences}
+\label{cap:limitacoes}
+
+This section summarizes what does \emph{not} exist or differs from the
+project documentation in v1.0.
+
+\section{Language}
+\begin{itemize}
+  \item \code{true}/\code{false} are 1/0; \code{type(true)} returns
+        \code{number}. The internal \code{VAL\_BOOL} type exists, but it is
+        not produced by literals/comparisons in v1.0.
+  \item \code{\&\&}/\code{||} do not short-circuit and return 1/0.
+        \code{!} and \code{\textasciitilde} are bitwise negation; there
+        is no logical negation.
+  \item There is no \code{local}, \code{let}, or \code{const};
+        assignment inside a function is implicitly local.
+  \item Only C-style \code{for} exists. There is no \code{for k,v in ...}
+        or native iterators; \code{pairs}/\code{ipairs} return lists.
+  \item There is no \code{and}/\code{or}/\code{not}, \code{\#},
+        \code{..}, or \code{//} operator. Use \code{floordiv} and
+        \code{+}.
+  \item There is no IIFE or postfix call/indexing on arbitrary
+        expressions: \code{f()[0]} and \code{fn(x)\{...\}(1)} are not
+        supported. Use temporaries.
+  \item Named functions and methods do not capture outer locals; only
+        anonymous functions do. There is no forward capture.
+  \item Table literals accept only identifier keys; use
+        \code{t[chave] = v} for dynamic keys.
+  \item There are no library namespaces (\code{math.*}, \code{string.*},
+        \code{table.*}) or first-class builtins.
+  \item There is no \code{try}/\code{catch}/\code{finally}/\code{throw}.
+        Use \code{pcall}.
+\end{itemize}
+
+\section{Metatables and Library}
+\begin{itemize}
+  \item Missing: \code{\_\_newindex}, \code{\_\_sub}, \code{\_\_mul},
+        \code{\_\_div}, \code{\_\_mod}, \code{\_\_pow}, \code{\_\_unm},
+        \code{\_\_lt}, \code{\_\_le}, \code{\_\_concat}, \code{\_\_len},
+        \code{\_\_pairs}, \code{\_\_metatable}, and weak tables.
+  \item Metatables do not work on lists or strings.
+  \item \code{match} returns \code{""} on failure (not \code{nil});
+        \code{gmatch} returns a list (not an iterator); \code{gsub} only
+        accepts textual replacement.
+  \item \code{printf}/\code{format} do not accept width, precision, or
+        flags.
+  \item \code{require} is resolved at compile time and is not a
+        first-class value; there is no \code{package.path} or
+        \code{package.loaded}.
+  \item There is no \code{debug.*} or stack introspection.
+\end{itemize}
+
+\section{Concurrency and Memory}
+\begin{itemize}
+  \item The cycle collector is not concurrent; cycles in paused
+        thread/coroutine stacks may be retained.
+  \item \code{load}/\code{dofile} bytecode accumulates until the end of
+        execution; there is no per-chunk release.
+  \item Threads share globals without a lock; concurrent writes are the
+        user's responsibility.
+  \item Coroutines have a fixed stack and single-value \code{coyield};
+        there is no \code{coyield} inside \code{pcall}.
+\end{itemize}
+
+\section{Roadmap}
+The only structural item still pending in the documents is E18 (register
+VM), which is a performance optimization. The functional gaps above are
+candidates for future phases: real booleans, short-circuiting, block
+scope, named closures, postfix/IIFE, \code{for-in}, namespaces, complete
+metatables, and error handling with \code{try/catch}.
+
+% ===========================================================================
+\appendix
+% ===========================================================================
+
+\chapter{Grammar Summary}
+\label{ap:gramatica}
+
+The complete grammar is in \file{docs/gramatica.ebnf}. Summary:
+
+\begin{lstlisting}[language=]
+program        = { statement } EOF ;
+block          = "{", { statement }, "}" ;
+
+statement      = block | if_statement | while_statement
+               | for_statement | repeat_statement
+               | "return", [ expression_list ], ";"
+               | "break", ";" | "continue", ";"
+               | "global", identifier, { ",", identifier }, ";"
+               | "goto", identifier, ";"
+               | "::", identifier, "::"
+               | type_definition | class_definition
+               | thread_definition | thread_command
+               | include_directive | import_directive
+               | function_definition | scalar_declaration
+               | expression_statement ;
+
+if_statement   = "if", "(", expression, ")", statement,
+                 { "elseif", "(", expression, ")", statement },
+                 [ "else", statement ] ;
+
+while_statement = "while", "(", expression, ")", statement ;
+
+for_statement  = "for", "(", [ expression ], ";",
+                 [ expression ], ";",
+                 [ expression ], ")", statement ;
+
+repeat_statement = "repeat", statement, "until",
+                   [ "(" ], expression, [ ")" ], [ ";" ] ;
+
+function_definition = [ type_prefix ], [ "fn" ], identifier,
+                      "(", [ parameter_list ], ")", block ;
+
+anonymous_function = [ "fn" ], "(", [ parameter_list ], ")", block ;
+
+type_definition  = "type", identifier, "{", { struct_member }, "}", ";" ;
+class_definition = "class", identifier, [ "extends", identifier ],
+                   "{", { struct_member }, "}", [ ";" ] ;
+\end{lstlisting}
+
+Precedence (lowest to highest): assignment, \code{||},
+\code{\&\&}, \code{|}, \code{\^{}}, \code{\&}, \code{== !=},
+\code{< > <= >=}, \code{<< >>}, \code{+ -}, \code{* / \%}, unary,
+postfix.
+
+\chapter{Quick Builtin Reference}
+\label{ap:builtins}
+
+This list covers the most used functions. For the complete list and
+arity details, see \file{docs/linguagem.md} and the code in
+\file{vm.cpp}, \file{patterns.cpp}, \file{fileio.cpp},
+\file{threads.cpp}, \file{sound.cpp}, and \file{graphics/}.
+
+\begin{longtable}{@{}L{4.8cm}L{10.5cm}@{}}
+\toprule
+Function & Summary \\
+\midrule
+\endhead
+\code{println(...)} & prints values with a newline \\
+\code{printf(fmt, ...)} & prints formatted output, no newline \\
+\code{format(fmt, ...)} & returns a formatted string \\
+\code{input([prompt])} & reads a line from stdin \\
+\code{type(x)} & type name \\
+\code{str(x)}, \code{tostring(x)} & textual representation \\
+\code{tonumber(x[, base])} & converts to a number or \code{nil} \\
+\code{assert(cond[, msg])} & error if the condition is false \\
+\code{error(msg)} & raises an error \\
+\code{collectgarbage()} & runs the cycle collector \\
+\midrule
+\code{len(x)} & length of string/list/table \\
+\code{append(lista, x)} & appends to the end of a 1D list \\
+\code{sort(v)} & sorts numbers (in place) \\
+\code{concat(v[, sep])} & joins elements into text \\
+\code{upper(s)}, \code{lower(s)} & uppercase/lowercase \\
+\code{trim(s)} & removes leading/trailing spaces/tabs \\
+\code{rep(s, n)} & repeats a string \\
+\code{reverse(s)} & reverses a string \\
+\code{find(s, sub)} & 0-based index or -1 \\
+\code{sub(s, i[, j])} & 0-based substring, inclusive end \\
+\code{byte(s[, i])} & byte code \\
+\code{char(b1, ...)} & string from bytes \\
+\code{match(s, pat[, init])} & first match/capture \\
+\code{gmatch(s, pat)} & list of matches \\
+\code{gsub(s, pat, repl)} & textual substitution \\
+\code{utf8\_len(s)} & code points \\
+\code{utf8\_codepoint(s[, i])} & code point or -1 \\
+\code{utf8\_char(cp)} & encodes a code point \\
+\code{String(...)} & text constructor (float: 2 decimals; int: base) \\
+\code{charAt}, \code{compareTo}, \code{c\_str} & Arduino String API \\
+\code{endsWith}, \code{equals}, \code{equalsIgnoreCase} & text comparisons \\
+\code{getBytes}, \code{toCharArray} & byte list or buffer \\
+\code{indexOf}, \code{lastIndexOf}, \code{length} & search and length \\
+\code{remove(s,i[,n])}, \code{replace}, \code{setCharAt} & immutable editing \\
+\code{reserve}, \code{startsWith}, \code{substring} & Arduino utilities \\
+\code{toDouble}, \code{toFloat}, \code{toInt} & text conversion \\
+\code{toLowerCase}, \code{toUpperCase} & upper/lower case \\
+\midrule
+\code{has(t, k)} & 1 if the key exists \\
+\code{remove(t, k)} & removes a key; 1 if it existed \\
+\code{keys(t)} & sorted list of keys \\
+\code{rawget(t, k)}, \code{rawset(t, k, v)} & access without metamethods \\
+\code{next(t[, k])} & next pair or empty list \\
+\code{pairs(t)} & list of pairs \\
+\code{ipairs(t)} & values of \code{t[0..]} \\
+\code{select(n, ...)} & selects arguments \\
+\code{unpack(v[, i[, j]])} & returns elements \\
+\midrule
+\code{abs}, \code{sqrt}, \code{pow} & mathematical functions \\
+\code{sin}, \code{cos}, \code{tan} & trigonometry (complex numbers) \\
+\code{atan2(y, x)} & arc tangent \\
+\code{log}, \code{log10}, \code{exp} & logarithms/exponential \\
+\code{floor}, \code{ceil}, \code{round} & rounding \\
+\code{floordiv(a, b)} & integer division \\
+\code{fmod(a, b)} & remainder with dividend sign \\
+\code{min(...)}, \code{max(...)} & minimum/maximum \\
+\code{random()}, \code{random\_int(a,b)} & random numbers \\
+\code{conj}, \code{real}, \code{imag} & complex numbers \\
+\code{rect(re,im)}, \code{polar(m,ang)} & complex construction \\
+\code{acos}, \code{asin}, \code{atan} & inverse trigonometry \\
+\code{cosh}, \code{sinh}, \code{tanh} & hyperbolic trigonometry \\
+\code{acosh}, \code{asinh}, \code{atanh} & inverse hyperbolic \\
+\code{cbrt}, \code{erf}, \code{erfc} & cube root and error \\
+\code{tgamma}, \code{lgamma} & gamma functions \\
+\code{exp2}, \code{expm1}, \code{log2}, \code{log1p} & extra exp/log \\
+\code{trunc}, \code{rint}, \code{nearbyint} & C99 rounding \\
+\code{hypot}, \code{fdim}, \code{fmax}, \code{fmin} & C99 binary \\
+\code{copysign}, \code{nextafter}, \code{remainder} & C99 binary \\
+\code{lround}, \code{llround}, \code{lrint}, \code{llrint} & integer rounding \\
+\code{ilogb}, \code{logb}, \code{ldexp}, \code{scalbn}, \code{scalbln} & exponent/scale \\
+\code{fma}, \code{nan} & C99 \\
+\code{frexp}, \code{modf}, \code{remquo} & multiple return \\
+\code{fpclassify}, \code{isnormal}, \code{signbit} & classification \\
+\code{isgreater}, \code{isless}, \code{isunordered} & C99 comparison \\
+\code{PI}, \code{E}, \code{TAU}, \code{M\_PI}, \code{M\_*} & mathematical constants \\
+\code{FP\_*}, \code{math\_errhandling} & classification/environment \\
+\midrule
+\code{time()}, \code{clock()} & clocks \\
+\code{os\_time()}, \code{os\_clock()} & aliases \\
+\code{os\_date([fmt])} & local date/time \\
+\midrule
+\code{mat\_index(M,i,j)} & 1-based linear index \\
+\code{rows(M)}, \code{cols(M)} & dimensions \\
+\code{identity(n)}, \code{zeros(n)} & special matrices \\
+\code{det}, \code{trace}, \code{inv}, \code{transpose} & linear algebra \\
+\code{dot}, \code{cross}, \code{matmul} & products \\
+\code{eigvals(M)}, \code{eigvecs(M)} & eigenvalues/eigenvectors \\
+\midrule
+\code{fopen}, \code{fclose} & open/close file \\
+\code{fread}, \code{fwrite}, \code{fputs} & read/write \\
+\code{fgets}, \code{fgetc}, \code{fputc} & line/character \\
+\code{fseek}, \code{ftell}, \code{rewind} & position \\
+\code{feof}, \code{ferror} & state \\
+\code{fprintf(f, fmt, ...)} & formatted write \\
+\midrule
+\code{cocreate(f)} & creates a coroutine \\
+\code{coresume(co, ...)} & resumes a coroutine \\
+\code{coyield(v)} & suspends a coroutine \\
+\code{costatus(co)} & coroutine state \\
+\code{start/stop/pause/resume f()} & controls a thread \\
+\code{delay(ms)} & sleeps for milliseconds \\
+\midrule
+\code{load(src[, nome])} & compiles a chunk \\
+\code{dofile(path)} & executes a file \\
+\code{require("path")} & loads a module (compile time) \\
+\midrule
+\code{setmetatable(t, mt)} & sets a metatable \\
+\code{getmetatable(t)} & gets a metatable \\
+\code{rawget}, \code{rawset} & direct access \\
+\midrule
+\code{size(w,h)}, \code{background(...)} & graphics \\
+\code{fill(...)}, \code{stroke(...)} & colors \\
+\code{rect}, \code{circle}, \code{ellipse}, \code{line} & primitives \\
+\code{text(...)}, \code{font(...)}, \code{textSize(...)} & text \\
+\code{show()}, \code{quit()} & frame/termination \\
+\code{loadImage}, \code{image}, \code{unloadImage} & images \\
+\code{mouseX}, \code{mouseY}, \code{keyPressed}, \code{key} & input \\
+\code{sound\_load}, \code{sound\_play}, \code{sound\_stop} & sound \\
+\bottomrule
+\end{longtable}
+
+\chapter{Complete Programs}
+\label{ap:exemplos}
+
+\section{FizzBuzz}
+\begin{lstlisting}
+for (i = 1; i <= 30; i += 1) {
+    if (i % 15 == 0) {
+        println("FizzBuzz");
+    } elseif (i % 3 == 0) {
+        println("Fizz");
+    } elseif (i % 5 == 0) {
+        println("Buzz");
+    } else {
+        println(i);
+    }
+}
+\end{lstlisting}
+
+\section{Iterative and Recursive Fibonacci}
+\begin{lstlisting}
+fib_iter(n) {
+    a = 0; b = 1;
+    for (i = 0; i < n; i += 1) {
+        t = a + b;
+        a = b;
+        b = t;
+    }
+    return a;
+}
+
+fib_rec(n) {
+    if (n < 2) { return n; }
+    return fib_rec(n - 1) + fib_rec(n - 2);
+}
+
+println(fib_iter(20));   // 6765
+println(fib_rec(10));    // 55
+\end{lstlisting}
+
+\section{Counter Closure}
+\begin{lstlisting}
+contador() {
+    n = 0;
+    return fn() {
+        n += 1;
+        return n;
+    };
+}
+
+c = contador();
+println(c());   // 1
+println(c());   // 2
+println(c());   // 3
+\end{lstlisting}
+
+\section{Table and Iteration}
+\begin{lstlisting}
+estoque = {
+    maca = 10,
+    banana = 5,
+    laranja = 8
+};
+
+ks = keys(estoque);
+for (i = 0; i < len(ks); i += 1) {
+    k = ks[i];
+    println(k, "=", estoque[k]);
+}
+
+ps = pairs(estoque);
+for (i = 0; i < len(ps); i += 1) {
+    println(ps[i][0], ps[i][1]);
+}
+\end{lstlisting}
+
+\section{Class with Inheritance}
+\begin{lstlisting}
+class Animal {
+    nome;
+    init(n) { nome = n; }
+    falar() { return "..."; }
+}
+
+class Cachorro extends Animal {
+    init(n) { super.init(n); }
+    falar() { return "au au"; }
+}
+
+a = new Animal("bicho");
+d = new Cachorro("rex");
+println(a.falar());   // ...
+println(d.falar());   // au au
+println(d.nome);      // rex
+\end{lstlisting}
+
+\section{Metatable for Addition}
+\begin{lstlisting}
+mt = {__add = fn(a, b) { return a.x + b.x; }};
+a = setmetatable({x = 2}, mt);
+b = setmetatable({x = 3}, mt);
+println(a + b);   // 5
+\end{lstlisting}
+
+\section{Coroutine}
+\begin{lstlisting}
+fn produtor() {
+    for (i = 1; i <= 3; i += 1) {
+        coyield(i * 10);
+    }
+    return "fim";
+}
+
+co = cocreate(produtor);
+while (1) {
+    r = coresume(co);
+    println(r[1]);
+    if (r[1] == "fim") { break; }
+}
+\end{lstlisting}
+
+\section{Simple Graphics}
+\begin{lstlisting}
+void setup() {
+    size(160, 120);
+    setDraw(quadro);
+}
+
+void quadro() {
+    background(15, 15, 35);
+    fill(255, 180, 0);
+    circle(80, 60, 40);
+    if (keyPressed() && key() == "q") { quit(); }
+}
+\end{lstlisting}
+
+\chapter{Glossary}
+\label{ap:glossario}
+
+\begin{description}[leftmargin=3cm,style=nextline]
+  \item[Array] 0-based list/matrix, represented by \code{VAL\_ARRAY}.
+  \item[Builtin] Native function registered in the VM and called by name.
+  \item[Bytecode] Instructions produced by the compiler and executed by the VM.
+  \item[Closure] Anonymous function that captures local variables from the enclosing scope.
+  \item[Coroutine] Cooperative execution that can be suspended and resumed.
+  \item[Metatable] Table that defines metamethods for another table/struct.
+  \item[Metamethod] Special field such as \code{\_\_index} or \code{\_\_add}.
+  \item[REPL] Interactive read-eval-print environment.
+  \item[Sandbox] Restrictions on I/O, modules, and instruction count.
+  \item[Struct] Type with fields and methods, defined by \code{type}.
+  \item[Table] Key-value map with reference semantics.
+  \item[Stack VM] Virtual machine that uses a stack of values.
+\end{description}
+
+\end{document}

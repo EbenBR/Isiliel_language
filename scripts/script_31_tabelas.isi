@@ -1,0 +1,35 @@
+// E3: tabelas/dicionarios — literal, indexacao, chaves ordenadas, pcall
+t = {nome = "Ana", idade = 30, ativo = 1};
+println(t);
+println(t["nome"]);
+println(t.idade);
+t.idade = 31;
+t["cidade"] = "Recife";
+println(t);
+println(len(t));
+println(has(t, "cidade"));
+println(has(t, "uf"));
+ks = keys(t);
+println(ks);
+println(t == t);
+u = t;
+u["nome"] = "Bia";
+println(t["nome"]);
+println(remove(t, "uf"));
+println(remove(t, "cidade"));
+println(len(t));
+n = {};
+n["a"] = 1;
+n["b"] = 2;
+n["c"] = 3;
+println(keys(n));
+printf("%s|%s\n", str(n), str(t));
+println(len({}));
+fn acessa(tb) { return tb["falta"]; } // L6: chave ausente devolve nil
+r = pcall(acessa, t);
+println(r[0]);
+println(r[1]);
+fn campo(tb) { return tb.campo; } // L6: campo ausente devolve nil
+r2 = pcall(campo, t);
+println(r2[0]);
+println(r2[1]);

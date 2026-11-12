@@ -1,0 +1,61 @@
+// script_21_teclado - teclado com key()/keyPressed() (callback no draw) (item 13)
+//
+// Gerencia teclas dentro do loop de draw():
+//   wasd  move o quadrado
+//   c     limpa o texto digitado
+//   q     chama quit() -> encerra o programa
+// Saida do programa: tecla q (quit()) ou Ctrl+C no terminal.
+// (ESC e o botao X da janela NAO fecham, por definicao.)
+
+// `global ...` faz as atribuicoes dentro de draw() escreverem nas variaveis
+// de cima (sem isso cada quadro criaria uma local nova = estado zerado).
+global texto, x, y;
+
+texto = "";
+x = 110;
+y = 70;
+
+void setup() {
+    size(640, 480);
+}
+
+void draw() {
+    background(15, 15, 35);
+
+    // --- gerenciamento de teclas (enquanto houver tecla neste quadro) ---
+    if (keyPressed()) {
+        k = key();
+        if (k == "w") { y = y - 4; }
+        if (k == "s") { y = y + 4; }
+        if (k == "a") { x = x - 4; }
+        if (k == "d") { x = x + 4; }
+        if (k == "c") { texto = ""; }
+        if (k == "q") {
+            println("digitado: [" + texto + "]  pos: " + str(x) + "," + str(y));
+            quit();
+        }
+        // registra as demais teclas digitadas
+        if (k != "w" && k != "a" && k != "s" && k != "d" && k != "c" && k != "q") {
+            texto = texto + k;
+        }
+    }
+
+    // quadrado controlado pelo teclado
+    fill(255, 200, 0);
+    noStroke();
+    rect(x, y, 24, 24);
+
+    // texto digitado
+    fill(255, 90, 90);
+    textSize(1);
+    text(texto, 5, 40);
+
+    // HUD
+    fill(200);
+    text("wasd move | c limpa | q sai", 5, 140);
+
+    // salva so o primeiro quadro (imagem de teste deterministica)
+    if (frameCount() == 1) {
+        println(save_screen("tests/out/script_21_teclado.ppm"));
+    }
+}

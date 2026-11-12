@@ -1,0 +1,14 @@
+// include de biblioteca (roadmap item 7)
+include("scripts/include/bib.isi");
+
+println(dobro(21));    // 42
+println(saudacao());   // ola da bib
+
+// include repetido e ignorado (idempotente)
+include("scripts/include/bib.isi");
+println(dobro(1));     // 2
+
+// ciclo a -> b -> a e cortado pela guarda anti-ciclo
+include("scripts/include/ciclo_a.isi");
+println(valor_ciclo());  // 7
+println(valor_outro());  // 8

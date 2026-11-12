@@ -1,0 +1,42 @@
+// Builtins extras (roadmap item 6): log, exp, atan2, min/max, floor..., random
+teste_log_exp() {
+    println(log(1));        // 0
+    println(log(100));      // 4.60517 (natural)
+    println(log10(1000));   // 3
+    println(exp(0));        // 1
+    println(exp(1));        // 2.71828
+    println(atan2(1, 0));   // 1.5708
+    println(log(-4));       // 1.38629+3.14159j (complexo, estilo cmath)
+    println(exp(1j));       // 0.540302+0.841471j
+}
+
+teste_arredondamento() {
+    println(floor(2.7));    // 2
+    println(floor(-2.7));   // -3
+    println(ceil(2.1));     // 3
+    println(ceil(-2.1));    // -2
+    println(round(2.5));    // 3 (half away from zero)
+    println(round(-2.5));   // -3
+}
+
+teste_minmax() {
+    println(min(4, 2, 8, 1));  // 1
+    println(max(4, 2, 8, 1));  // 8
+    println(min(-3, -1, -7));  // -7
+    println(max(-3, -1, -7));  // -1
+    println(min(5));           // 5
+}
+
+teste_random() {
+    r = random();
+    println(r >= 0);       // 1
+    println(r < 1);        // 1
+    i = random_int(1, 6);
+    println(i >= 1);       // 1
+    println(i <= 6);       // 1
+}
+
+teste_log_exp();
+teste_arredondamento();
+teste_minmax();
+teste_random();

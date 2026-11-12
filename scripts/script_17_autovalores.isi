@@ -1,0 +1,32 @@
+// Autovalores e vetores próprios (roadmap item 9)
+
+teste_triangular() {
+    A = [[1, 1], [0, 2]];
+    println(eigvals(A));   // [2, 1]
+    println(eigvecs(A));   // colunas: [1,1] (λ=2), [1,0] (λ=1)
+}
+
+teste_diagonal() {
+    D = [[2, 0, 0], [0, 3, 0], [0, 0, 4]];
+    println(eigvals(D));   // [4, 2, 3]
+    println(eigvecs(D));   // colunas: [0,0,2], [2,0,0], [0,1,0]
+}
+
+teste_rotacao() {
+    C = [[0, -1], [1, 0]];
+    println(eigvals(C));   // [1j, -1j] (autovalores puramente imaginarios)
+    println(eigvecs(C));
+}
+
+teste_generico2x2() {
+    A = [[4, 7], [2, 6]];
+    // tr=10, det=10, disc=sqrt(60) -> lambda = (10 +- sqrt(60))/2
+    l = eigvals(A);
+    println(l);
+    println(eigvecs(A));
+}
+
+teste_triangular();
+teste_diagonal();
+teste_rotacao();
+teste_generico2x2();

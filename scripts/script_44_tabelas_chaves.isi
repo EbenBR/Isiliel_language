@@ -1,0 +1,37 @@
+// script_44 - L8: chaves arbitrarias (numero/texto/booleano) + next/pairs/ipairs.
+t = {};
+t[0] = "zero";
+t["a"] = 1;
+t[2] = "dois";
+t[1.5] = "meio";
+println(len(t));                 // 4
+println(t[0]);                   // zero
+println(t["a"]);                 // 1
+println(t[2]);                   // dois
+println(t[1.5]);                 // meio
+println(has(t, 0));              // 1
+println(has(t, 99));             // 0
+println(t);                      // {0: "zero", 1.5: "meio", 2: "dois", "a": 1}
+
+ks = keys(t);                    // ordem canonica (deterministica)
+println(len(ks));                // 4
+println(ks[0]);                  // 0
+println(ks[3]);                  // a
+
+ps = pairs(t);                   // lista de pares [k, v]
+println(len(ps));                // 4
+p0 = ps[0];
+println(p0[0]);                  // 0
+println(p0[1]);                  // zero
+nx = next(t);
+println(nx[0]);                  // 0
+
+u = {}; u[0] = "a"; u[1] = "b"; u[2] = "c";
+ip = ipairs(u);                  // valores de 0..n-1
+println(len(ip));                // 3
+println(ip[0] + ip[1] + ip[2]);// abc
+
+remove(t, 0);
+println(has(t, 0));              // 0
+rawset(t, 7, "sete");
+println(rawget(t, 7));           // sete

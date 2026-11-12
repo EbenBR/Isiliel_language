@@ -1,0 +1,37 @@
+ teste_completo_for() {
+    rows = 3;
+    cols = 3;
+    
+    // 1. Criar uma matriz identidade usando loops
+    // (Poderiamos usar identity(3), mas vamos testar a lógica do for)
+    M = [[0,0,0],[0,0,0],[0,0,0]];
+    
+    println("Preenchendo matriz via loops for...");
+    
+    for (i = 1; i <= rows; i = i + 1) {
+        for (j = 1; j <= cols; j = j + 1) {
+            // Se linha == coluna, coloca 1.0 (Identidade)
+            if (i == j) {
+                idx = mat_index(M, i, j);
+                M[idx] = 1.0;
+            }
+        }
+    }
+
+    println("Matriz Gerada:");
+    println(M);
+
+    // 2. Testar operações encadeadas
+    det_M = det(M);
+    println("Determinante da matriz gerada (deve ser 1.0):");
+    println(det_M);
+
+    // 3. Loop simples de contagem
+    println("Contagem regressiva:");
+    for (k = 5; k > 0; k = k - 1) {
+        println(k);
+    }
+    println("Fogo!");
+}
+
+teste_completo_for();

@@ -1,0 +1,12 @@
+// script_48 - L3: demonstracao de som.
+// Sem MYINTERP_SOUND: backend software (silencio, deterministico).
+// Com MYINTERP_SOUND=device: toca de verdade via raylib (1 s, 440 Hz).
+h = sound_load("tests/fixtures/tone1s.wav");
+println(sound_is_playing(h));   // 0 (ainda nao tocou)
+sound_play(h, 0);               // 1x
+println(sound_is_playing(h));   // 1
+while (sound_is_playing(h)) {
+    sound_update();             // sem dt: usa o relogio real
+}
+println(sound_is_playing(h));   // 0 (terminou)
+sound_unload(h);

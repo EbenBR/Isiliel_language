@@ -1,0 +1,32 @@
+// script_41 - L4: biblioteca basica (type/tostring/tonumber/assert/error/raw*).
+// `type Nome { ... }` continua sendo declaracao de struct; `type(expr)` e a
+// funcao basica (desambiguada no lexer pelo '(' seguinte).
+int f() { return 1; }
+
+type Ponto {
+    x;
+    y;
+};
+
+println(type(1));            // number
+println(type("x"));          // string
+println(type(f));            // function
+println(type([1, 2]));       // array
+println(type({a = 1}));      // table
+println(type(1 == 1));       // number (booleanos sao 1/0)
+
+t = {a = 7};
+println(type(t));            // table
+println(tostring(3.5));      // 3.5
+println(tostring("abc"));    // abc
+println(tonumber("42"));     // 42
+println(tonumber("0x1f"));   // 31
+println(tonumber("1e3"));    // 1000
+println(tonumber("101", 2)); // 5
+println(tonumber("zz", 36)); // 1295
+println(tonumber("nope"));   // nil (L6)
+println(rawget(t, "a"));     // 7
+rawset(t, "b", 9);
+println(rawget(t, "b"));     // 9
+println(assert(1, "ok"));    // 1
+println(assert("texto"));    // texto

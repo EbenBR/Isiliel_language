@@ -1,0 +1,7 @@
+// script_28_precisao_dupla - precisao dupla (fase E1b, negativo 2)
+// 2^24+1 nao e representavel em float32 (viraria 16777216); exato em double
+printf("%d\n", 16777217);
+printf("%d\n", 123456789012345);
+// 2^53: limite dos inteiros exatos em double
+printf("%d\n", 9007199254740992);
+printf("%d\n", -16777217);

@@ -1,0 +1,51 @@
+// Escopo local e recursão (roadmap item 8)
+
+// 1) Recursão: fatorial e fibonacci
+fatorial(n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return (n * fatorial(n - 1));
+}
+
+fib(n) {
+    if (n <= 1) {
+        return n;
+    }
+    return (fib(n - 1) + fib(n - 2));
+}
+
+// 2) Locais não vazam para o topo; limpos a cada chamada
+contadora() {
+    contador = 100;
+    contador = contador + 1;
+    return contador;
+}
+
+// 3) Local homônimo não altera o global
+global_x = 1;
+sombra() {
+    global_x = 2;   // cria LOCAL, não mexe no global
+    return global_x;
+}
+
+// 4) Leitura de global em função (global definido antes)
+le_global() {
+    return (global_x + 10);
+}
+
+// 5) Parâmetro é local
+mostra_p(x) {
+    return x;
+}
+
+println(fatorial(5));    // 120
+println(fatorial(10));   // 3628800 (int64 exato)
+println(fib(10));        // 55
+println(contadora());    // 101
+println(contadora());    // 101 (local limpo a cada chamada)
+println(global_x);       // 1
+println(sombra());       // 2
+println(global_x);       // 1 (inalterado)
+println(le_global());    // 11
+println(mostra_p(7));    // 7

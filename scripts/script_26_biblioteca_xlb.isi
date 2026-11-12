@@ -1,0 +1,10 @@
+// script_26_biblioteca_xlb - biblioteca externa `.xlb` via include(...) (item 16)
+//
+// `.xlb` e codigo puro da linguagem: o include embute as definicoes no
+// script antes de compilar (uma vez por unidade; ciclos sao cortados).
+
+include("scripts/libs/showtext.xlb");
+
+showtext("Hello from showtext.xlb");
+banner("modulos e bibliotecas");
+showtext("segunda chamada");

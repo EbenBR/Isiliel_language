@@ -1,0 +1,125 @@
+// L12: closures/upvalues (fn anonimas capturam locais do escopo externo)
+println("=== closures ===");
+
+fn makeCounter(inicio) {
+    n = inicio;
+    return fn() {
+        n = n + 1;
+        return n;
+    };
+}
+c1 = makeCounter(0);
+c2 = makeCounter(10);
+println(c1());
+println(c1());
+println(c2());
+println(c1());
+
+fn makeAdder(n) { return fn(x) { return x + n; }; }
+add5 = makeAdder(5);
+println(add5(3));
+
+// duas closures compartilham o mesmo upvalue
+fn makePair() {
+    v = 0;
+    inc = fn() { v = v + 1; return v; };
+    get = fn() { return v; };
+    return [inc, get];
+}
+p = makePair();
+inc = p[0];
+get = p[1];
+println(inc());
+println(inc());
+println(get());
+
+// recursao via upvalue
+fn makeFat() {
+    fat = fn(n) {
+        if (n <= 1) { return 1; }
+        return n * fat(n - 1);
+    };
+    return fat;
+}
+f = makeFat();
+println(f(5));
+
+// captura de avo (closure aninhada)
+fn outer() {
+    a = 100;
+    return fn() {
+        b = 10;
+        return fn() {
+            a = a + 1;
+            b = b + 1;
+            return a + b;
+        };
+    };
+}
+h = outer();
+g2 = h();
+println(g2());
+println(g2());
+
+// closure como argumento / funcao local
+fn apply(fn2, x) { return fn2(x); }
+println(apply(makeAdder(50), 7));
+
+fn localfn() {
+    m = fn(x) { return x * 2; };
+    return m(21);
+}
+println(localfn());
+
+// pcall com closure
+r = pcall(c1);
+println(r[0]);
+println(r[1]);
+
+// coroutine com closure
+fn makeCo() {
+    x = 5;
+    return fn() {
+        x = x + 1;
+        coyield(x);
+        x = x + 1;
+        return x;
+    };
+}
+co = cocreate(makeCo());
+r = coresume(co);
+println(r[1]);
+r = coresume(co);
+println(r[1]);
+
+// locais capturados usados em opcodes fundidos no frame dono
+fn makeAcc() {
+    total = 0;
+    add = fn(x) { total = total + x; };
+    for (i = 1; i <= 3; i = i + 1) {
+        total = total + i;
+    }
+    add(10);
+    if (total < 100) { total = total + 1; }
+    return total;
+}
+println(makeAcc());
+
+fn makeLoop() {
+    i = 0;
+    f = fn() { return i; };
+    for (i = 0; i < 3; i = i + 1) { }
+    return f();
+}
+println(makeLoop());
+
+// funcao nomeada local capturada por closure
+fn makeInner() {
+    fn inner(x) { return x + 1; }
+    g = inner;
+    f = fn(x) { return inner(x); };
+    return [g(4), f(5)];
+}
+r = makeInner();
+println(r[0]);
+println(r[1]);

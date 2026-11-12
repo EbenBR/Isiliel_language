@@ -1,0 +1,33 @@
+// script_20_setup_draw - modelo Processing: setup() + callback draw() (roadmap item 13)
+// Com o backend raylib abre JANELA INTERATIVA: a bola segue o mouse e a
+// tela fecha com ESC ou no botao X. Sem raylib (suíte: MYINTERP_GFX=software)
+// roda exatamente 1 quadro e gera tests/out/script_20_setup_draw.ppm.
+
+void setup() {
+    size(240, 160);
+}
+
+void draw() {
+    background(20, 20, 60);
+
+    // saida: tecla q (quit()) ou Ctrl+C (ESC/X nao fecham)
+    if (keyPressed() && key() == "q") { quit(); }
+
+    // retangulo fixo
+    fill(0, 255, 160);
+    noStroke();
+    rect(10, 10, 50, 30);
+
+    // bola que segue o mouse (0,0 no backend sem janela)
+    fill(255, 200, 0);
+    stroke(255, 255, 255);
+    circle(mouseX(), mouseY(), 30);
+
+    // HUD
+    fill(255);
+    textSize(1);
+    text("mouse: " + str(mouseX()) + "," + str(mouseY()), 5, 120);
+    text("key: " + key(), 5, 140);
+
+    save_screen("tests/out/script_20_setup_draw.ppm");
+}

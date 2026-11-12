@@ -1,0 +1,81 @@
+// Structs: type, metodos, campos e printf (sugestao 12)
+type Cars {
+  brand;
+  model;
+  color;
+  year;
+
+  void show()
+  {
+     printf("%s %s %s %d\n",  brand, model, color, year);
+  }
+};
+
+Cars car1 = {"BMW", "X5", "Black", 1999};
+car1.show();
+
+// leitura e atribuicao de campo (inclusive compound)
+println(car1.brand);
+car1.year = 2001;
+car1.year += 1;
+println(car1.year);
+
+// todos os tipos nos campos + struct aninhado + repr
+type Garage {
+  car;
+  n;
+  flag;
+  tags;
+  z;
+  void resumo() {
+    printf("n=%d flag=%g\n", n, flag);
+    println(tags);
+    println(z);
+    n = n * 2;
+  }
+};
+
+Garage g = {car1, 3, 1, [10, 20], 2+3j};
+g.resumo();
+println(g.n);
+println(g);
+
+// metodos com parametros e retorno
+type Calc {
+  a;
+  b;
+  float soma() { return a + b; }
+  float addk(k) { a = a + k; return a; }
+};
+
+Calc c = {10, 5};
+println(c.soma());
+println(c.addk(7));
+println(c.a);
+
+// objeto vindo de funcao (tipo conhecido em runtime)
+make() {
+  return Cars{"Fiat", "Uno", "Branco", 1995};
+}
+Cars f = make();
+f.show();
+println(f.brand);
+
+// acesso encadeado e escrita em campo aninhado
+type Outer {
+  inner;
+};
+Outer o = {f};
+println(o.inner.model);
+o.inner.year = 2020;
+println(o.inner.year);
+
+// structs em loop e igualdade estrutural
+i = 0;
+while (i < 3) {
+  c.addk(1);
+  i = i + 1;
+}
+println(c.a);
+println(Calc{1, 2} == Calc{1, 2});
+println(Calc{1, 2} == Calc{1, 3});

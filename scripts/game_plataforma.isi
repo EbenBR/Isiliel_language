@@ -1,0 +1,754 @@
+// game_plataforma.isi - Plataforma automatico (auto-runner) para explorar
+// graficos 2D, colisoes, camera com parallax, HUD e som da Isiliel.
+//
+// Controles:
+//     w ou espaco   pular (toque de novo no ar para pulo duplo)
+//     r             reiniciar
+//     q             sair
+//
+// Audio real (raylib/PulseAudio/ALSA):
+//     MYINTERP_SOUND=device ./build/isirun scripts/game_plataforma.isi
+// Sem MYINTERP_SOUND o backend de som fica em software (silencioso).
+// Headless (1 quadro, gera tests/out/game_plataforma.ppm):
+//     MYINTERP_GFX=software ./build/isirun scripts/game_plataforma.isi
+
+global W, H, GROUND_Y, LEVEL_W, GRAVITY, JUMP_V, MAX_FALL, RUN_SPEED;
+global player_x, player_y, player_w, player_h, player_vy, on_ground;
+global jumps_left, coyote, jump_buffer, invuln, cam_x;
+global score, coins, lives, state, respawn_x, respawn_y;
+global px, py, pw, ph, cx, cy, ctaken, sx, sy, sw, sh;
+global ex, ey, ex0, edir, eleft, eright, edead;
+global cloud_x, cloud_y, cloud_s, check_x, check_y, check_hit;
+global goal_x, goal_y;
+global music_snd, jump_snd, coin_snd, hurt_snd, land_snd, win_snd, gameover_snd;
+
+// ---------------------------------------------------------------- nivel
+add_platform(x, y, w, h) {
+    append(px, x);
+    append(py, y);
+    append(pw, w);
+    append(ph, h);
+}
+
+add_coin(x, y) {
+    append(cx, x);
+    append(cy, y);
+    append(ctaken, 0);
+}
+
+coin_row(x, y, n, step) {
+    i = 0;
+    while (i < n) {
+        add_coin(x + i * step, y);
+        i = i + 1;
+    }
+}
+
+add_spike(x, y, w, h) {
+    append(sx, x);
+    append(sy, y);
+    append(sw, w);
+    append(sh, h);
+}
+
+add_enemy(x, y, left, right) {
+    append(ex, x);
+    append(ey, y);
+    append(ex0, x);
+    append(edir, 1);
+    append(eleft, left);
+    append(eright, right);
+    append(edead, 0);
+}
+
+add_cloud(x, y, s) {
+    append(cloud_x, x);
+    append(cloud_y, y);
+    append(cloud_s, s);
+}
+
+add_check(x, y) {
+    append(check_x, x);
+    append(check_y, y);
+    append(check_hit, 0);
+}
+
+build_level() {
+    px = [];
+    py = [];
+    pw = [];
+    ph = [];
+    cx = [];
+    cy = [];
+    ctaken = [];
+    sx = [];
+    sy = [];
+    sw = [];
+    sh = [];
+    ex = [];
+    ey = [];
+    ex0 = [];
+    edir = [];
+    eleft = [];
+    eright = [];
+    edead = [];
+    cloud_x = [];
+    cloud_y = [];
+    cloud_s = [];
+    check_x = [];
+    check_y = [];
+    check_hit = [];
+
+    // Chao com quatro vazios (o auto-run obriga a pular).
+    add_platform(0, GROUND_Y, 900, 72);
+    add_platform(990, GROUND_Y, 730, 72);
+    add_platform(1810, GROUND_Y, 930, 72);
+    add_platform(2830, GROUND_Y, 790, 72);
+    add_platform(3710, GROUND_Y, 1090, 72);
+
+    // Pedras de apoio dentro dos vazios (deixam o salto mais tolerante).
+    add_platform(912, 372, 66, 18);
+    add_platform(1732, 372, 66, 18);
+    add_platform(2752, 372, 66, 18);
+    add_platform(3632, 372, 66, 18);
+
+    // Plataformas flutuantes (one-way: so pousa vindo de cima).
+    add_platform(260, 318, 150, 20);
+    add_platform(500, 246, 130, 20);
+    add_platform(740, 180, 120, 20);
+    add_platform(1040, 326, 170, 20);
+    add_platform(1270, 254, 150, 20);
+    add_platform(1510, 186, 130, 20);
+    add_platform(1880, 326, 160, 20);
+    add_platform(2110, 252, 150, 20);
+    add_platform(2350, 180, 140, 20);
+    add_platform(2600, 300, 150, 20);
+    add_platform(2940, 332, 180, 20);
+    add_platform(3200, 260, 150, 20);
+    add_platform(3450, 188, 140, 20);
+    add_platform(3690, 300, 120, 20);
+    add_platform(3890, 246, 160, 20);
+    add_platform(4130, 178, 150, 20);
+    add_platform(4380, 300, 160, 20);
+
+    // Moedas no chao.
+    coin_row(120, 360, 4, 52);
+    coin_row(560, 360, 4, 50);
+    coin_row(1080, 360, 4, 52);
+    coin_row(1380, 360, 3, 52);
+    coin_row(1940, 360, 4, 52);
+    coin_row(2220, 360, 3, 52);
+    coin_row(2980, 360, 4, 52);
+    coin_row(3280, 360, 3, 52);
+    coin_row(3880, 360, 4, 52);
+    coin_row(4180, 360, 4, 52);
+
+    // Moedas sobre plataformas.
+    coin_row(292, 280, 3, 42);
+    coin_row(526, 208, 3, 40);
+    coin_row(766, 142, 3, 36);
+    coin_row(1070, 288, 3, 44);
+    coin_row(1300, 216, 3, 42);
+    coin_row(1540, 148, 3, 38);
+    coin_row(1910, 288, 3, 44);
+    coin_row(2140, 214, 3, 42);
+    coin_row(2380, 142, 3, 38);
+    coin_row(2970, 294, 3, 44);
+    coin_row(3230, 222, 3, 42);
+    coin_row(3480, 150, 3, 38);
+    coin_row(3920, 208, 3, 44);
+    coin_row(4160, 140, 3, 38);
+    coin_row(4410, 262, 3, 44);
+
+    // Espinhos no chao.
+    add_spike(2500, GROUND_Y - 18, 48, 18);
+    add_spike(3350, GROUND_Y - 18, 48, 18);
+    add_spike(4100, GROUND_Y - 18, 54, 18);
+
+    // Inimigos patrulhando plataformas e chao.
+    add_enemy(1080, 304, 1045, 1200);
+    add_enemy(2140, 230, 2115, 2250);
+    add_enemy(3230, 238, 3205, 3340);
+    add_enemy(4160, 156, 4135, 4270);
+    add_enemy(1980, GROUND_Y - 22, 1900, 2220);
+
+    // Checkpoints (respawn seguro depois dos vazios).
+    add_check(1840, GROUND_Y);
+    add_check(3740, GROUND_Y);
+
+    // Nuvens em coordenadas de mundo (parallax 0.25).
+    add_cloud(180, 90, 54);
+    add_cloud(520, 130, 38);
+    add_cloud(840, 74, 62);
+    add_cloud(1230, 118, 44);
+    add_cloud(1660, 86, 58);
+    add_cloud(2050, 136, 36);
+    add_cloud(2420, 76, 60);
+    add_cloud(2860, 124, 46);
+    add_cloud(3240, 84, 56);
+    add_cloud(3630, 132, 40);
+    add_cloud(4050, 78, 62);
+    add_cloud(4470, 120, 44);
+
+    goal_x = 4620;
+    goal_y = GROUND_Y - 116;
+}
+
+// ---------------------------------------------------------------- estado
+reset_enemies() {
+    i = 0;
+    while (i < len(ex)) {
+        ex[i] = ex0[i];
+        edir[i] = 1;
+        edead[i] = 0;
+        i = i + 1;
+    }
+}
+
+reset() {
+    score = 0;
+    coins = 0;
+    lives = 3;
+    state = 0;
+    player_x = 60;
+    player_y = GROUND_Y - player_h;
+    player_vy = 0;
+    on_ground = 0;
+    jumps_left = 2;
+    coyote = 0;
+    jump_buffer = 0;
+    invuln = 0;
+    cam_x = 0;
+    respawn_x = 60;
+    respawn_y = GROUND_Y - player_h;
+
+    i = 0;
+    while (i < len(ctaken)) {
+        ctaken[i] = 0;
+        i = i + 1;
+    }
+    i = 0;
+    while (i < len(check_hit)) {
+        check_hit[i] = 0;
+        i = i + 1;
+    }
+    reset_enemies();
+
+    sound_stop(hurt_snd);
+    sound_stop(win_snd);
+    sound_stop(gameover_snd);
+    sound_play(music_snd, -1);
+}
+
+do_jump() {
+    player_vy = JUMP_V;
+    jumps_left = jumps_left - 1;
+    on_ground = 0;
+    coyote = 0;
+    jump_buffer = 0;
+    sound_play(jump_snd, 0);
+}
+
+hurt() {
+    if (invuln > 0 || state != 0) { return; }
+    lives = lives - 1;
+    sound_play(hurt_snd, 0);
+    if (lives <= 0) {
+        state = 2;
+        sound_stop(music_snd);
+        sound_play(gameover_snd, 0);
+        return;
+    }
+    player_x = respawn_x;
+    player_y = respawn_y;
+    player_vy = 0;
+    on_ground = 0;
+    jumps_left = 2;
+    coyote = 0;
+    jump_buffer = 0;
+    invuln = 90;
+    reset_enemies();
+}
+
+update_player() {
+    if (invuln > 0) { invuln = invuln - 1; }
+    if (jump_buffer > 0) { jump_buffer = jump_buffer - 1; }
+
+    if (on_ground == 1) {
+        coyote = 8;
+        jumps_left = 2;
+    } else if (coyote > 0) {
+        coyote = coyote - 1;
+    }
+
+    if (jump_buffer > 0 && (on_ground == 1 || coyote > 0 || jumps_left > 0)) {
+        do_jump();
+    }
+
+    // Auto-run.
+    player_x = player_x + RUN_SPEED;
+    if (player_x < 0) { player_x = 0; }
+    if (player_x > LEVEL_W - player_w) { player_x = LEVEL_W - player_w; }
+
+    // Gravidade e colisao vertical one-way.
+    player_vy = player_vy + GRAVITY;
+    if (player_vy > MAX_FALL) { player_vy = MAX_FALL; }
+    old_bottom = player_y + player_h;
+    player_y = player_y + player_vy;
+
+    prev_ground = on_ground;
+    on_ground = 0;
+    i = 0;
+    while (i < len(px)) {
+        if (player_x + player_w > px[i] && player_x < px[i] + pw[i] &&
+            player_vy >= 0 &&
+            old_bottom <= py[i] + 2 &&
+            player_y + player_h >= py[i]) {
+            player_y = py[i] - player_h;
+            player_vy = 0;
+            on_ground = 1;
+            jumps_left = 2;
+            coyote = 8;
+        }
+        i = i + 1;
+    }
+
+    if (on_ground == 1 && prev_ground == 0) {
+        sound_play(land_snd, 0);
+    }
+
+    if (player_y > H + 140) {
+        hurt();
+    }
+}
+
+update_enemies() {
+    i = 0;
+    while (i < len(ex)) {
+        if (edead[i] == 0) {
+            ex[i] = ex[i] + edir[i] * 0.8;
+            if (ex[i] < eleft[i]) { ex[i] = eleft[i]; edir[i] = 1; }
+            if (ex[i] > eright[i]) { ex[i] = eright[i]; edir[i] = -1; }
+
+            if (invuln == 0 &&
+                player_x + player_w > ex[i] && player_x < ex[i] + 30 &&
+                player_y + player_h > ey[i] && player_y < ey[i] + 22) {
+                prev_bottom = player_y + player_h - player_vy;
+                if (player_vy > 0 && prev_bottom <= ey[i] + 8) {
+                    edead[i] = 1;
+                    player_vy = -9.5;
+                    score = score + 20;
+                    sound_play(coin_snd, 0);
+                } else {
+                    hurt();
+                }
+            }
+        }
+        i = i + 1;
+    }
+}
+
+update_coins() {
+    i = 0;
+    while (i < len(cx)) {
+        if (ctaken[i] == 0 &&
+            player_x + player_w > cx[i] - 10 && player_x < cx[i] + 10 &&
+            player_y + player_h > cy[i] - 10 && player_y < cy[i] + 10) {
+            ctaken[i] = 1;
+            coins = coins + 1;
+            score = score + 10;
+            sound_play(coin_snd, 0);
+        }
+        i = i + 1;
+    }
+}
+
+update_spikes() {
+    if (invuln > 0) { return; }
+    i = 0;
+    while (i < len(sx)) {
+        if (player_x + player_w > sx[i] && player_x < sx[i] + sw[i] &&
+            player_y + player_h > sy[i] && player_y < sy[i] + sh[i]) {
+            hurt();
+            return;
+        }
+        i = i + 1;
+    }
+}
+
+update_checkpoints() {
+    i = 0;
+    while (i < len(check_x)) {
+        if (check_hit[i] == 0 && player_x + player_w > check_x[i]) {
+            check_hit[i] = 1;
+            respawn_x = check_x[i] + 24;
+            respawn_y = GROUND_Y - player_h;
+            score = score + 5;
+            sound_play(coin_snd, 0);
+        }
+        i = i + 1;
+    }
+}
+
+update_camera() {
+    cam_x = player_x - 260;
+    if (cam_x < 0) { cam_x = 0; }
+    if (cam_x > LEVEL_W - W) { cam_x = LEVEL_W - W; }
+}
+
+update_game() {
+    if (state != 0) { return; }
+    update_player();
+    if (state != 0) { return; }
+    update_enemies();
+    if (state != 0) { return; }
+    update_spikes();
+    if (state != 0) { return; }
+    update_coins();
+    update_checkpoints();
+    update_camera();
+
+    if (player_x + player_w > goal_x) {
+        state = 1;
+        sound_stop(music_snd);
+        sound_play(win_snd, 0);
+    }
+}
+
+// ---------------------------------------------------------------- desenho
+draw_cloud(x, y, s) {
+    fill(68, 80, 128);
+    circle(x, y, s);
+    circle(x - s * 0.48, y + 4, s * 0.78);
+    circle(x + s * 0.50, y + 5, s * 0.88);
+    fill(88, 104, 156);
+    circle(x, y - 4, s * 0.66);
+}
+
+draw_background() {
+    background(18, 22, 46);
+    fill(28, 34, 70);
+    rect(0, 0, W, 170);
+    fill(36, 44, 86);
+    rect(0, 170, W, 120);
+    fill(44, 54, 100);
+    rect(0, 290, W, H - 290);
+
+    fill(255, 220, 120);
+    noStroke();
+    circle(686, 86, 68);
+    fill(255, 242, 184);
+    circle(686, 86, 42);
+
+    i = 0;
+    while (i < len(cloud_x)) {
+        x = cloud_x[i] - cam_x * 0.25;
+        if (x > -180 && x < W + 180) {
+            draw_cloud(x, cloud_y[i], cloud_s[i]);
+        }
+        i = i + 1;
+    }
+
+    // Morros distantes com parallax.
+    fill(32, 62, 78);
+    i = 0;
+    while (i < 8) {
+        x = i * 620 - cam_x * 0.45;
+        if (x > -500 && x < W + 500) {
+            ellipse(x, 520, 860, 360);
+        }
+        i = i + 1;
+    }
+    fill(38, 78, 82);
+    i = 0;
+    while (i < 9) {
+        x = i * 540 + 180 - cam_x * 0.62;
+        if (x > -420 && x < W + 420) {
+            ellipse(x, 540, 700, 300);
+        }
+        i = i + 1;
+    }
+}
+
+draw_platforms() {
+    i = 0;
+    while (i < len(px)) {
+        x = px[i] - cam_x;
+        if (x + pw[i] > -40 && x < W + 40) {
+            fill(18, 22, 38);
+            rect(x + 4, py[i] + 8, pw[i], ph[i]);
+
+            fill(64, 84, 112);
+            rect(x, py[i], pw[i], ph[i]);
+            fill(92, 196, 116);
+            rect(x, py[i], pw[i], 8);
+            fill(118, 224, 138);
+            rect(x, py[i], pw[i], 3);
+
+            if (ph[i] > 40) {
+                fill(52, 68, 92);
+                j = 8;
+                while (j < pw[i] - 8) {
+                    rect(x + j, py[i] + 18, 20, 6);
+                    rect(x + j + 10, py[i] + 38, 20, 6);
+                    j = j + 42;
+                }
+            }
+        }
+        i = i + 1;
+    }
+}
+
+draw_spikes() {
+    stroke(238, 92, 102);
+    strokeWeight(2);
+    noFill();
+    i = 0;
+    while (i < len(sx)) {
+        x = sx[i] - cam_x;
+        if (x + sw[i] > -30 && x < W + 30) {
+            j = 0;
+            while (j < sw[i]) {
+                line(x + j, sy[i] + sh[i], x + j + 10, sy[i]);
+                line(x + j + 10, sy[i], x + j + 20, sy[i] + sh[i]);
+                j = j + 20;
+            }
+        }
+        i = i + 1;
+    }
+    noStroke();
+}
+
+draw_coins() {
+    noStroke();
+    i = 0;
+    while (i < len(cx)) {
+        if (ctaken[i] == 0) {
+            x = cx[i] - cam_x;
+            if (x > -30 && x < W + 30) {
+                wobble = abs(sin(frameCount() / 8 + i));
+                w = 4 + wobble * 10;
+                fill(255, 198, 48);
+                ellipse(x, cy[i], w, 18);
+                fill(255, 246, 166);
+                ellipse(x, cy[i], w * 0.45, 9);
+            }
+        }
+        i = i + 1;
+    }
+}
+
+draw_enemies() {
+    i = 0;
+    while (i < len(ex)) {
+        if (edead[i] == 0) {
+            x = ex[i] - cam_x;
+            if (x > -50 && x < W + 50) {
+                fill(20, 28, 38);
+                ellipse(x + 15, ey[i] + 24, 30, 8);
+                fill(104, 218, 126);
+                ellipse(x + 15, ey[i] + 11, 30, 22);
+                fill(142, 240, 158);
+                ellipse(x + 15, ey[i] + 7, 22, 12);
+                fill(18, 30, 24);
+                circle(x + 9, ey[i] + 9, 4);
+                circle(x + 21, ey[i] + 9, 4);
+            }
+        }
+        i = i + 1;
+    }
+}
+
+draw_checkpoints() {
+    i = 0;
+    while (i < len(check_x)) {
+        x = check_x[i] - cam_x;
+        if (x > -40 && x < W + 40) {
+            fill(224, 232, 244);
+            rect(x, check_y[i] - 72, 5, 72);
+            if (check_hit[i] == 1) {
+                fill(96, 226, 132);
+            } else {
+                fill(92, 156, 246);
+            }
+            rect(x + 5, check_y[i] - 72, 32, 18);
+            fill(18, 24, 40);
+            textSize(1);
+            text("Pnt", x + 9, check_y[i] - 68);
+        }
+        i = i + 1;
+    }
+}
+
+draw_goal() {
+    x = goal_x - cam_x;
+    if (x > -100 && x < W + 100) {
+        fill(18, 24, 40);
+        rect(x + 4, goal_y + 4, 54, GROUND_Y - goal_y);
+        fill(228, 234, 244);
+        rect(x, goal_y, 6, GROUND_Y - goal_y);
+        fill(255, 214, 70);
+        rect(x + 6, goal_y + 4, 48, 32);
+        fill(92, 64, 16);
+        textSize(1);
+        text("FIM", x + 13, goal_y + 14);
+    }
+}
+
+draw_player() {
+    x = player_x - cam_x;
+
+    if (invuln > 0 && floordiv(invuln, 4) % 2 == 0) { return; }
+
+    fill(18, 22, 38);
+    ellipse(x + player_w / 2, player_y + player_h + 2, 30, 8);
+
+    // Pernas animadas.
+    if (on_ground == 1) {
+        step = sin(frameCount() / 3) * 4;
+        fill(36, 78, 142);
+        rect(x + 4, player_y + player_h - 6, 8, 6 + step);
+        rect(x + player_w - 12, player_y + player_h - 6, 8, 6 - step);
+    } else {
+        fill(36, 78, 142);
+        rect(x + 4, player_y + player_h - 6, 8, 6);
+        rect(x + player_w - 12, player_y + player_h - 8, 8, 8);
+    }
+
+    // Corpo, cabeca, olhos e cachecol.
+    fill(72, 146, 244);
+    rect(x + 3, player_y + 10, player_w - 6, player_h - 14);
+    fill(255, 208, 164);
+    circle(x + player_w / 2, player_y + 9, 18);
+    fill(26, 34, 58);
+    circle(x + player_w / 2 - 4, player_y + 8, 3);
+    circle(x + player_w / 2 + 4, player_y + 8, 3);
+    fill(240, 90, 92);
+    rect(x + 3, player_y + 16, player_w - 6, 4);
+    rect(x - 4, player_y + 17, 8, 5);
+}
+
+draw_hud() {
+    fill(10, 12, 24);
+    rect(0, 0, W, 44);
+
+    fill(236, 242, 255);
+    textSize(1);
+    text("PLATAFORMA", 14, 14);
+    text("PONTOS " + str(score), 152, 14);
+    text("MOEDAS " + str(coins), 334, 14);
+
+    // Vidas (coracoes simplificados).
+    i = 0;
+    while (i < lives) {
+        fill(244, 92, 112);
+        circle(488 + i * 22, 20, 14);
+        fill(255, 170, 180);
+        circle(484 + i * 22, 17, 5);
+        i = i + 1;
+    }
+
+    // Barra de progresso.
+    fill(36, 44, 70);
+    rect(600, 16, 170, 10);
+    prog = player_x / (LEVEL_W - 100);
+    if (prog > 1) { prog = 1; }
+    fill(92, 206, 246);
+    rect(600, 16, 170 * prog, 10);
+
+    fill(170, 190, 220);
+    text("w/espaco: pulo duplo   r: reiniciar   q: sair", 14, H - 22);
+}
+
+draw_overlay() {
+    if (state == 0) { return; }
+
+    fill(12, 16, 32);
+    stroke(92, 206, 246);
+    strokeWeight(2);
+    rect(178, 156, 444, 156);
+    noStroke();
+
+    textSize(3);
+    if (state == 1) {
+        fill(120, 240, 150);
+        text("VOCE VENCEU!", 236, 184);
+    } else {
+        fill(255, 112, 132);
+        text("GAME OVER", 258, 184);
+    }
+
+    textSize(1);
+    fill(226, 236, 252);
+    text("PONTOS " + str(score) + "   MOEDAS " + str(coins) + "   VIDAS " + str(lives), 236, 258);
+    text("tecle r para reiniciar ou q para sair", 258, 282);
+}
+
+render() {
+    draw_background();
+    draw_platforms();
+    draw_checkpoints();
+    draw_goal();
+    draw_spikes();
+    draw_coins();
+    draw_enemies();
+    draw_player();
+    draw_hud();
+    draw_overlay();
+
+    if (frameCount() == 1) {
+        save_screen("tests/out/game_plataforma.ppm");
+    }
+}
+
+// ---------------------------------------------------------------- ciclo
+void setup() {
+    W = 800;
+    H = 480;
+    GROUND_Y = 408;
+    LEVEL_W = 4800;
+    GRAVITY = 0.62;
+    JUMP_V = -14.0;
+    MAX_FALL = 16;
+    RUN_SPEED = 2.8;
+    player_w = 26;
+    player_h = 34;
+
+    size(W, H);
+    build_level();
+
+    sound_backend("device");
+
+    music_snd = sound_load("scripts/sounds/music.wav");
+    jump_snd = sound_load("scripts/sounds/jump.wav");
+    coin_snd = sound_load("scripts/sounds/coin.wav");
+    hurt_snd = sound_load("scripts/sounds/hurt.wav");
+    land_snd = sound_load("scripts/sounds/land.wav");
+    win_snd = sound_load("scripts/sounds/win.wav");
+    gameover_snd = sound_load("scripts/sounds/gameover.wav");
+
+    sound_set_volume(music_snd, 0.45);
+    sound_set_volume(jump_snd, 0.55);
+    sound_set_volume(coin_snd, 0.55);
+    sound_set_volume(hurt_snd, 0.60);
+    sound_set_volume(land_snd, 0.35);
+    sound_set_volume(win_snd, 0.65);
+    sound_set_volume(gameover_snd, 0.60);
+
+    reset();
+}
+
+void draw() {
+    if (keyPressed()) {
+        k = key();
+        if (k == "q") { quit(); }
+        if (k == "r") { reset(); }
+        if (state == 0 && (k == " " || k == "w")) {
+            jump_buffer = 8;
+        }
+    }
+
+    update_game();
+    sound_update();
+    render();
+}

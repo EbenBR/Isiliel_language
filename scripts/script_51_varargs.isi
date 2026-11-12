@@ -1,0 +1,75 @@
+// script_51 - L5: varargs (...), select, unpack e expansao de argumentos.
+fn soma(...) {
+    n = select("#", ...);
+    s = 0;
+    for (i = 0; i < n; i = i + 1) {
+        s = s + select(i + 1, ...);
+    }
+    return s;
+}
+println(soma(1, 2, 3));
+println(soma());
+
+// return ... devolve todos os valores vararg
+fn retorna_tudo(...) { return ...; }
+a, b, c = retorna_tudo(10, 20, 30);
+println(a); println(b); println(c);
+
+// ... tambem expande no fim de uma lista de return
+fn primeiro(a, ...) { return a, ...; }
+p, q, r = primeiro(1, 2, 3);
+println(p); println(q); println(r);
+
+// Em expressao comum, ... vale o primeiro extra (ou nil)
+fn primeiro_extra(...) { x = ...; return x; }
+println(primeiro_extra(42, 43));
+println(primeiro_extra());
+
+// Chamada no ultimo argumento expande todos os valores
+fn dois() { return 7, 8; }
+println(dois());
+println("x", dois());
+x, y = dois(); println(x + y);
+
+// Encaminhamento de varargs para builtin e para funcao vararg
+fn repassa(...) { return soma(...); }
+println(repassa(4, 5, 6));
+fn fwd(...) { return retorna_tudo(...); }
+m, n = fwd(9, 8);
+println(m); println(n);
+
+// unpack(lista[, i[, j]]) devolve varios valores (indices 0-based)
+t = [4, 5, 6];
+println(unpack(t));
+u, v = unpack(t, 1, 2);
+println(u); println(v);
+
+// select: "#" = quantidade; n = do n-esimo em diante; negativo = do fim
+println(select("#", "a", "b", "c"));
+println(select(-1, "a", "b", "c"));
+i, j, k = select(2, "a", "b", "c");
+println(i); println(j); println(k);
+
+// Parametros faltantes viram nil; extras vao para ...
+fn sem_args(a, b, ...) {
+    println(a); println(b); println(select("#", ...));
+}
+sem_args();
+sem_args(1);
+sem_args(1, 2);
+sem_args(1, 2, 3, 4);
+
+// Funcao normal: extras sao descartados e faltantes viram nil
+fn normal(a, b) { println(a); println(b); }
+normal(1, 2, 3);
+normal(7);
+fn zero() { return 1; }
+println(zero(2, 3));
+
+// Metodo vararg (__this nao conta como argumento extra)
+type Caixa {
+    valor;
+    int soma(extra, ...) { return valor + extra + select("#", ...); }
+};
+c = Caixa{10};
+println(c.soma(1, 2, 3));

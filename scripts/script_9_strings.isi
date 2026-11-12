@@ -1,0 +1,19 @@
+//v = [10, 20, 30]; // OP_BUILD_ARRAY
+//println(v[1]);    // OP_INDEX_LOAD deve imprimir 20
+
+//m = [[1, 2], [3, 4]];
+//m[0][1] = 99;
+//println(m[0][1]);
+
+//v = [1, 2, 3];
+//println(v);
+
+//m = [[1], [2], [3]];
+//println(m);
+
+a = "Hello ";
+b = "Word!";
+c = a+b;
+println(c);
+println(a==b);
+println(a!=b);

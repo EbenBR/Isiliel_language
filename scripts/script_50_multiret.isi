@@ -1,0 +1,67 @@
+// script_50 - L5: multiplos valores de retorno e multi-atribuicao.
+fn dois() { return 1, 2; }
+fn tres() { return 10, 20, 30; }
+fn um() { return 7; }
+fn nada() { }
+fn fwd() { return tres(); }
+fn soma_par() {
+    a, b = tres();
+    return a + b, a * b;
+}
+
+// Contexto de 1 valor pega o PRIMEIRO retorno
+x = dois();
+println(x);
+println(dois() + 100);
+
+// Multi-atribuicao preenche os alvos
+a, b = dois();
+println(a); println(b);
+p, q, r = tres();
+println(p); println(q); println(r);
+
+// Alvos a mais recebem nil; alvos a menos descartam os excedentes
+m, n = um();
+println(m); println(n);
+s, t = tres();
+println(s); println(t);
+
+// Funcao sem return devolve zero valores -> nil no contexto de 1
+z = nada();
+println(z);
+println(type(z));
+y, w = nada();
+println(y); println(w);
+
+// return f() encaminha todos os valores
+c, d, e = fwd();
+println(c); println(d); println(e);
+
+// Retorno multiplo a partir de expressoes
+u, v = soma_par();
+println(u); println(v);
+
+// Chamada indireta e recursao tambem devolvem multiplos valores
+g = dois;
+i, j = g();
+println(i); println(j);
+fn rec(n) {
+    if (n <= 1) { return 1, 1; }
+    a, b = rec(n - 1);
+    return a + b, a;
+}
+u, v = rec(5);
+println(u); println(v);
+
+// pcall expoe apenas o 1o valor (formato [ok, valor] mantido)
+r = pcall(dois);
+println(r[0]); println(r[1]);
+
+// Builtins continuam devolvendo 1 valor; alvos extras viram nil
+k, l = len("abc");
+println(k); println(l);
+
+// return; devolve zero valores
+fn vazio() { return; }
+zz = vazio();
+println(zz);

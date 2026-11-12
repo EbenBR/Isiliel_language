@@ -1,0 +1,16 @@
+ teste_inversa() {
+    A = [[4, 7], 
+         [2, 6]];
+    
+    Ai = inv(A);
+    I = A * Ai; // Resultado deve ser [[1, 0], [0, 1]]
+    
+    println("Matriz A:");
+    println(A);
+    println("Inversa de A:");
+    println(Ai);
+    println("A * inv(A) (Identidade):");
+    println(I);
+}
+
+teste_inversa();

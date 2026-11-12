@@ -1,0 +1,12 @@
+// script_25_thread_principal - guarda de thread: graficos/input SO na thread principal (item 15)
+//
+// A thread tenta chamar size() -> erro impresso como "[thread g] erro: ..."
+// (nao derruba o processo) e o script continua ate o fim.
+
+thread g() {
+    size(10, 10); // proibido fora da thread principal
+}
+
+start g();
+delay(60);       // da tempo da thread tentar e registrar o erro
+println("fim");

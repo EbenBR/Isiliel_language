@@ -1,0 +1,14 @@
+// util.xlb — modulo-script de teste para require() (fase E6, negativo 10)
+//
+// Carregado UMA vez por execucao; funcoes viram globais e o valor de
+// `return` e devolvido por require (e cacheado nas chamadas seguintes).
+
+fn util_dobro(x) {
+    return x * 2;
+}
+
+fn util_sauda(nome) {
+    return "ola, " + nome;
+}
+
+return 7;

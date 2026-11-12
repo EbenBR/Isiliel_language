@@ -1,0 +1,51 @@
+// script_23_arquivos - arquivos estilo stdio: fopen/fputs/fseek/fclose/fprintf (item 14)
+//
+// Exemplo canonico: grava, seek relativo ao fim, sobrescreve, le de volta.
+// fopen que falha devolve 0 (== NULL); handles ja fechados geram erro.
+// Ordem dos argumentos segue a de C: fputs/dados primeiro, stream por ultimo;
+// fread(n, f) le n bytes do arquivo f.
+
+fptr = fopen("tests/out/arq.txt", "w");
+if (fptr == NULL) {
+    printf("The file is not opened.\n");
+} else {
+    printf("The file is now opened.\n");
+    data = "GeeksforGeeks-A Computer";
+    fputs(data, fptr);
+    fputs("\n", fptr);
+    fseek(fptr, -6, SEEK_END);
+    fputs("GeeksforGeeks", fptr);
+    printf("pos antes do fclose: %d\n", ftell(fptr));
+    fclose(fptr);
+    printf("Data successfully written in file arq.txt\n");
+}
+
+// round-trip: le tudo de volta
+r = fopen("tests/out/arq.txt", "r");
+println("[" + fread(100, r) + "]");
+fclose(r);
+
+// fprintf (formato identico ao printf)
+f = fopen("tests/out/log.txt", "w");
+fprintf(f, "%s=%d %s=%s\n", "a", 1, "nome", "Ada");
+fprintf(f, "%%g = %g\n", 3.14159);
+fclose(f);
+
+// fgets le a linha COM \n; fread(50) pega o resto (ou ate o fim)
+lf = fopen("tests/out/log.txt", "r");
+println("linha: [" + fgets(lf) + "]");
+println("resto: [" + fread(50, lf) + "]");
+println(feof(lf));            // 1 = fim apos o fread que esgotou
+println(rewind(lf));          // 1 = volta ao inicio e limpa o EOF
+println(feof(lf));            // 0 = limpo pelo rewind
+println("[" + fread(4, lf) + "]");
+println(ftell(lf));           // 4 = posicao atual
+fclose(lf);
+
+// fopen de arquivo inexistente para leitura -> 0 (== NULL), sem erro
+nada = fopen("tests/out/nao_existe.txt", "r");
+if (nada == NULL) {
+    println("fopen inexistente -> NULL (esperado)");
+}
+
+println("fim");

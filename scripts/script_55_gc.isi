@@ -1,0 +1,38 @@
+// L13: coletor de ciclos (trial deletion)
+// Tabela que se referencia
+t = {};
+t.self = t;
+t = nil;
+printf("tabela: %d\n", collectgarbage());
+
+// Lista que se contem
+v = [1, 2, 3];
+v[0] = v;
+v = nil;
+printf("lista: %d\n", collectgarbage());
+
+// Struct com campo apontando para si
+type Node { next; value; };
+n = Node{0, 42};
+n.next = n;
+n = nil;
+printf("struct: %d\n", collectgarbage());
+
+// Metatable/__gc em ciclo: finalizador roda na coleta
+mt = {};
+mt.__gc = fn(self) { println("  __gc do ciclo"); };
+g = setmetatable({}, mt);
+g.self = g;
+g = nil;
+printf("com __gc: %d\n", collectgarbage());
+
+// Objeto vivo (ciclo alcancavel) NAO e coletado
+live = {};
+live.self = live;
+printf("vivo: %d\n", collectgarbage());
+println(live.self == live);
+
+// Sem ciclo: shared_ptr libera na hora; nao ha nada para o coletor
+x = {};
+x = nil;
+printf("sem ciclo: %d\n", collectgarbage());

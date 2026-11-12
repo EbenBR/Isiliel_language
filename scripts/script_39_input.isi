@@ -1,0 +1,5 @@
+// script_39 - L2: input([prompt]) le uma linha do stdin e devolve string.
+// O teste da suite alimenta tests/expected/script_39_input.in.
+nome = input("nome? ");
+idade = input("idade? ");
+println("ola " + nome + " (" + idade + ")");

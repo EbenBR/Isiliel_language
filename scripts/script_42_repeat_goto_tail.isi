@@ -1,0 +1,31 @@
+// script_42 - L10: repeat/until, goto/labels e proper tail calls.
+i = 0;
+repeat {
+    i = i + 1;
+} until (i >= 3);
+println("repeat " + str(i));      // repeat 3
+
+i = 0; s = 0;
+repeat {
+    i = i + 1;
+    if (i == 2) { continue; }     // continue vai para a condicao
+    s = s + i;
+} until (i >= 4);
+println("continue " + str(s));    // continue 8 (1+3+4)
+
+i = 0;
+::loop::
+i = i + 1;
+if (i < 3) { goto loop; }
+println("goto " + str(i));        // goto 3
+
+// proper tail call: `return soma(...)` reusa o frame (1e5 chamadas)
+soma(n, acc) {
+    if (n == 0) { return acc; }
+    return soma(n - 1, acc + n);
+}
+if (soma(100000, 0) == 5000050000) { println("tail ok"); }
+
+// return de builtin continua normal (OP_CALL_BUILTIN, sem tail call)
+g(x) { return str(x); }
+println("builtin " + g(7));

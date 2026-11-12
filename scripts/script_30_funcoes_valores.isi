@@ -1,0 +1,31 @@
+// E2: funcoes como valores de 1a classe, fn anonima, pcall e traceback
+fn dobro(n) { return n * 2; }
+
+f = dobro;
+println(f(4));
+g = dobro;
+println(f == g);
+println(f != dobro);
+println(f);
+println(str(f));
+
+m = fn(x) { return x + 10; };
+println(m(5));
+
+r = pcall(dobro, 3);
+println(r[0]);
+println(r[1]);
+
+fn quebra(x) { return x / 0; }
+r2 = pcall(quebra, 10);
+println(r2[0]);
+println(r2[1]);
+
+r3 = pcall(5, 1);
+println(r3[0]);
+println(r3[1]);
+
+fn aninhada(x) { return quebra(x); }
+r4 = pcall(aninhada, 7);
+println(r4[0]);
+println(r4[1]);

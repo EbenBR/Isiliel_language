@@ -1,0 +1,8 @@
+// script_37 - L0: setup() no core roda ANTES do corpo, mesmo sem graficos.
+// Ordem esperada: "setup" (boot) e depois "corpo" (instrucoes de topo).
+
+void setup() {
+    println("setup");
+}
+
+println("corpo");

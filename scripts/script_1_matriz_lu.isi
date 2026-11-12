@@ -1,0 +1,43 @@
+        // Definicao da Matriz A
+        A = [[1, 2], [3, 4]];
+        
+        // Calculo de LU
+        res = lu(A);
+        L = res[0];
+        U = res[1];
+        
+        println("Matriz L:");
+        println(L);
+        println("Matriz U:");
+        println(U);
+        
+        // Teste de Logica e Bitwise
+        detA = det(A);
+        if (detA == 0) {
+            println("Matriz singular!");
+        } else {
+            println("Determinante de A:");
+            println(detA);
+        }
+        
+        // Teste de operacao bitwise e atribuicao composta
+        x = 5;      // 0101 em binario
+        x = x << 1; // 1010 (10 em decimal)
+        x += 2;     // 12 em decimal
+        println("Resultado Bitwise + Composta (esperado 12):");
+        println(x);
+        
+        // Teste de biblioteca matematica
+        val = pow(2, 3) + sin(0);
+        println("Resultado Math (pow(2,3) + sin(0)):");
+        println(val);
+        
+        // Teste de comparacao completa
+        a = 10;
+        b = 5;
+        if (a > b) {
+            println("10 > 5: CORRETO");
+        }
+        if (a != b) {
+            println("10 != 5: CORRETO");
+        }

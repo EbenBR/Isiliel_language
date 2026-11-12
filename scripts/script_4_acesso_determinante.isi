@@ -1,0 +1,22 @@
+ teste_acesso() {
+    M = [[10, 20, 30], 
+        [40, 50, 60]];
+             
+    // Queremos alterar o valor 60 (Linha 1, Coluna 2)
+    i = mat_index(M, 1, 2); 
+    
+    M[i] = 999;
+    
+    println("Matriz M apos alteracao no indice calculado:");
+    println(M);
+}
+
+ calc_det() {
+    B = [[1, 2, 3], [0, 1, 4], [5, 6, 0]];
+    d = det(B); // d será 1.0
+    println("Determinante de B:");
+    println(d);
+}
+
+teste_acesso();
+calc_det();

@@ -1,0 +1,36 @@
+// script_46 - L14: load/dofile com arena de codigo estavel.
+global l14_silent;
+
+r = dofile("tests/fixtures/l14_chunk.txt");
+println(r);                       // 42
+println(contador_l14);            // 10
+
+get = load("return soma_l14;");   // load devolve uma funcao-chunk
+soma = get();                     // executar devolve a funcao soma_l14
+println(soma(2, 3));              // 5
+
+f = load("fn dobro(x) { return x * 2; } return dobro;");
+dobro = f();
+println(dobro(21));               // 42
+
+g = load("return 7;");
+println(g());                     // 7
+
+h = load("x_l14 = 5;");           // chunk define global
+h();
+println(x_l14);                   // 5
+
+e = load("");                     // chunk vazio devolve 0
+println(e());                     // 0
+
+println(eval("return 1 + 2;"));   // eval = load(codigo)()
+
+n = dofile("tests/fixtures/l14_nested.txt");
+println(n);                       // 43
+
+// Anexar muitos chunks nao invalida referencias antigas (arena deque).
+tmp = load("return soma_l14;");
+s0 = tmp();
+for (i = 0; i < 20; i = i + 1) { dofile("tests/fixtures/l14_chunk.txt"); }
+r0 = s0(1, 2);
+println(r0);                      // 3

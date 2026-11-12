@@ -1,0 +1,5 @@
+println("Hello");
+z = 1 + 1j;
+println("z = z * z:");
+println(z*z);
+

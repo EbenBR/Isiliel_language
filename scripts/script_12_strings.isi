@@ -1,0 +1,39 @@
+// Strings de verdade: escapes, indexacao, comparacao, len
+teste_escapes() {
+    println("linha1\nlinha2");
+    println("tab:\t|");
+    println("aspas: \"dentro\" e barra: \\ fim");
+    println("fim\0");
+}
+
+teste_index() {
+    s = "abcdef";
+    println(s[0]);
+    println(s[5]);
+    println(s[-1]); // ultimo caractere
+    println(s[-3]); // 'd'
+}
+
+teste_comparacao() {
+    println("abc" == "abc"); // 1
+    println("abc" != "abd"); // 1
+    println("abc" < "abd");   // 1 (lexicografica)
+    println("abc" < "abb");   // 0
+    println("b" > "a");       // 1
+    println("b" > "c");       // 0
+    println("abc" <= "abc");  // 1
+    println("abd" <= "abc");  // 0
+    println("apple" < "banana"); // 1
+}
+
+teste_len() {
+    println(len("hello"));
+    println(len(""));
+    println(len([[1, 2, 3]])); // lista 1D (3 elementos)
+    println(len([[1, 2], [3, 4]])); // matriz 2x2 = 4 elementos
+}
+
+teste_escapes();
+teste_index();
+teste_comparacao();
+teste_len();

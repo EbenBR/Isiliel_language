@@ -1,0 +1,29 @@
+// E4: classes — new/init, extends, super, override, campos herdados
+class Conta {
+    saldo;
+    init(s) { saldo = s; }
+    depositar(v) { saldo = saldo + v; return saldo; }
+    descri() { return "conta"; }
+}
+class ContaEspecial extends Conta {
+    bonus;
+    init(s, b) { super.init(s); bonus = b; }
+    depositar(v) { saldo = saldo + v + bonus; return saldo; }
+    descrever() { return super.descri() + "+esp"; }
+}
+c = new Conta(100);
+println(c.saldo);
+println(c.depositar(50));
+println(c.descri());
+e = new ContaEspecial(100, 5);
+println(e.saldo);
+println(e.bonus);
+println(e.depositar(10));
+println(e.descrever());
+println(e.descri());
+println(c == e);
+e.saldo = 200;
+println(e.saldo);
+d = new ContaEspecial(0, 0);
+println(d.saldo);
+println(d.bonus);

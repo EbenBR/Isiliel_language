@@ -1,0 +1,115 @@
+        // Testes de numeros complexos (sufixo 'j', estilo Python)
+        z = 3 + 4j;
+        println("z = 3 + 4j:");
+        println(z);
+
+        println("z * 2 (esperado 6+8j):");
+        println(z * 2);
+
+        println("z + 1 (esperado 4+4j):");
+        println(z + 1);
+
+        println("z * z (esperado -7+24j):");
+        println(z * z);
+
+        println("1j * 1j (esperado -1):");
+        println(1j * 1j);
+
+        println("1 / 1j (esperado -1j):");
+        println(1 / 1j);
+
+        println("-2j (esperado -2j):");
+        println(-2j);
+
+        // Funcoes basicas de complexos
+        println("abs(z) (esperado 5):");
+        println(abs(z));
+
+        println("conj(z) (esperado 3-4j):");
+        println(conj(z));
+
+        println("real(z), imag(z) (esperado 3 e 4):");
+        println(real(z));
+        println(imag(z));
+
+        println("sqrt(-1) (esperado 1j):");
+        println(sqrt(-1));
+
+        println("sqrt(z) (esperado 2+1j):");
+        println(sqrt(z));
+
+        println("pow(1j, 2) (esperado -1):");
+        println(pow(1j, 2));
+
+        // rect(a, b) e polar(modulo, angulo)
+        println("rect(3, 4) (esperado 3+4j):");
+        println(rect(3, 4));
+
+        println("polar(5, 0) (esperado 5):");
+        println(polar(5, 0));
+
+        w = polar(5, 0);
+        if (w == 5) {
+            println("polar(5,0) == 5: CORRETO");
+        }
+
+        // Comparacoes e veracidade
+        if (z == 3 + 4j) {
+            println("z == 3+4j: CORRETO");
+        }
+        if (z != 3 + 5j) {
+            println("z != 3+5j: CORRETO");
+        }
+        if (1 + 0j == 1) {
+            println("1+0j == 1: CORRETO");
+        }
+        if (z) {
+            println("z e verdadeiro: CORRETO");
+        }
+        v = 0j;
+        if (v) {
+            println("ERRO: 0j nao pode ser verdadeiro");
+        } else {
+            println("0j e falso: CORRETO");
+        }
+
+        // Atribuicao composta
+        c = 1j;
+        c += 1;
+        println("c = 1j; c += 1 (esperado 1+1j):");
+        println(c);
+
+        // --- Matrizes complexas ---
+        A = [[1j, 2], [3, 4j]];
+        println("Matriz A = [[1j, 2], [3, 4j]]:");
+        println(A);
+
+        println("A + A (esperado [[2j, 4], [6, 8j]]):");
+        println(A + A);
+
+        println("2j * A (esperado [[-2, 4j], [6j, -8]]):");
+        println(2j * A);
+
+        println("A * A (esperado [[5, 10j], [15j, -10]]):");
+        println(A * A);
+
+        println("det(A) (esperado -10):");
+        println(det(A));
+
+        println("trace(A) (esperado 5j):");
+        println(trace(A));
+
+        println("Transposta de A:");
+        println(transpose(A));
+
+        res = lu(A);
+        Lm = res[0];
+        Um = res[1];
+        println("L de lu(A):");
+        println(Lm);
+        println("U de lu(A):");
+        println(Um);
+
+        M = [[2, 0], [0, 2j]];
+        println("inv de [[2, 0], [0, 2j]]:");
+        println(inv(M));

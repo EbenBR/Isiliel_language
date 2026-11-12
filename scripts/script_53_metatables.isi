@@ -1,0 +1,81 @@
+// L11: metatables/metamethods (__index, __call, __add, __eq, __tostring, __gc)
+println("=== metatables ===");
+
+// __index com tabela (cadeia)
+base = {saudacao = "ola"};
+mtIndex = {};
+mtIndex.__index = base;
+obj = setmetatable({nome = "mundo"}, mtIndex);
+println(obj.saudacao);
+println(obj["saudacao"]);
+println(obj.nome);
+println(obj.ausente);
+
+// __index com funcao
+mtFn = {};
+mtFn.__index = fn(t, k) { return "campo:" + k; };
+obj2 = setmetatable({}, mtFn);
+println(obj2.foo);
+println(obj2["bar"]);
+
+// __call: o objeto entra como primeiro argumento
+mtCall = {};
+mtCall.__call = fn(self, x) { return self.base + x; };
+somador = setmetatable({base = 10}, mtCall);
+println(somador(5));
+r = pcall(somador, 7);
+println(r[0]);
+println(r[1]);
+
+// __add
+mtAdd = {};
+mtAdd.__add = fn(a, b) {
+    if (type(b) == "table") { return a.x + b.x; }
+    return a.x + b;
+};
+v1 = setmetatable({x = 2}, mtAdd);
+v2 = setmetatable({x = 3}, mtAdd);
+println(v1 + v2);
+println(v1 + 5);
+
+// __add em atribuicao composta (global e local capturado)
+v3 = setmetatable({x = 4}, mtAdd);
+v3 = v3 + 6;
+println(v3);
+fn makeAdd() {
+    z = setmetatable({x = 1}, mtAdd);
+    return fn() { z = z + 2; return z; };
+}
+fa = makeAdd();
+println(fa());
+
+// __eq / __ne
+mtEq = {};
+mtEq.__eq = fn(a, b) { return a.v == b.v; };
+a = setmetatable({v = 1}, mtEq);
+b = setmetatable({v = 1}, mtEq);
+c = setmetatable({v = 2}, mtEq);
+println(a == b);
+println(a != b);
+println(a == c);
+println(a != c);
+
+// __tostring
+mtStr = {};
+mtStr.__tostring = fn(self) { return "Pessoa(" + self.nome + ")"; };
+p = setmetatable({nome = "Ana"}, mtStr);
+println(p);
+println(tostring(p));
+println(str(p));
+printf("[%s]\n", p);
+
+// getmetatable / setmetatable(nil)
+println(getmetatable(p) == mtStr);
+setmetatable(p, nil);
+println(getmetatable(p) == nil);
+
+// __gc (executa ao fim do script)
+mtGc = {};
+mtGc.__gc = fn(self) { println("gc executado"); };
+g = setmetatable({}, mtGc);
+println("fim");

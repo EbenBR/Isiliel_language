@@ -1,0 +1,46 @@
+// script_19_graficos - funcoes graficas estilo Processing (roadmap item 13)
+// Modelo setup()/draw(): com o backend raylib abre JANELA (fecha com quit()
+// na tecla q ou Ctrl+C); sem raylib (suíte: MYINTERP_GFX=software) roda 1
+// quadro e gera tests/out/script_19_graficos.ppm.
+
+void setup() {
+    size(80, 60);
+    println(width());
+    println(height());
+}
+
+void draw() {
+    // saida: tecla q (quit()) ou Ctrl+C (ESC/X nao fecham)
+    if (keyPressed() && key() == "q") { quit(); }
+
+    background(20, 20, 40);
+
+    fill(255, 128, 0);
+    stroke(255, 255, 255);
+    strokeWeight(1);
+    rect(5, 5, 30, 20);
+
+    fill(0, 200, 255);
+    noStroke();
+    circle(60, 15, 20);
+
+    stroke(255, 0, 0);
+    strokeWeight(2);
+    line(0, 59, 79, 0);
+
+    fill(255);
+    textSize(1);
+    text("GFX 19", 5, 40);
+
+    stroke(0, 255, 0);
+    noFill();
+    ellipse(40, 45, 30, 14);
+
+    point(79, 59);
+    pixel(0, 0);
+
+    // salva so o primeiro quadro (na janela interativa nao regrava a cada frame)
+    if (frameCount() == 1) {
+        println(save_screen("tests/out/script_19_graficos.ppm"));
+    }
+}

@@ -1,0 +1,33 @@
+// script_27_modulo_nativo - modulo nativo `.mod` via import(...) (item 16)
+//
+// O manifesto JSON aponta para a biblioteca compilada pelo Makefile
+// (dlopen/dlsym): funcoes viram chamadas FFI e variaveis viram simbolos
+// nativos — leitura/escrita diretas na memoria da biblioteca.
+
+import("scripts/modules/motor_controller.mod");
+
+println("limit: " + str(MotorSpeedLimit));
+println("name: " + MotorName);
+
+r = Motor_Start(1500);
+println("start(1500): " + str(r));
+println("rpm: " + str(RPM));
+
+// out-params: resultado = array [retorno, rpm_out, temp_out] (indices 0-based)
+res = Motor_Read();
+println("read: ret=" + str(res[0]) + " rpm=" + str(res[1]) + " temp=" + str(res[2]));
+
+// variavel nativa gravavel: muda o limite DENTRO da biblioteca
+MotorSpeedLimit = 5000;
+println("novo limite: " + str(MotorSpeedLimit) + " / Motor_GetLimit: " + str(Motor_GetLimit()));
+
+r2 = Motor_Start(4000);
+println("start(4000): " + str(r2));
+r3 = Motor_Start(99999);
+println("start(99999): " + str(r3));
+
+st = Motor_Stop();
+println("stop: " + str(st));
+println("rpm apos stop: " + str(RPM));
+r4 = Motor_Read();
+println("read apos stop: ret=" + str(r4[0]) + " rpm=" + str(r4[1]));

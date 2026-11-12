@@ -1,0 +1,32 @@
+// E6 (negativo 10): bibliotecas string/tabela/os + require() de modulo-script
+s = "Ola Mundo";
+println(upper(s));
+println(lower(s));
+println(rep("-", 5));
+println(rep("ab", 3));
+println(find(s, "Mundo"));
+println(find(s, "xyz"));
+println(trim("  hi  "));
+
+v = [3, 1, 2];
+sort(v);
+println(v[0]);
+println(v[1]);
+println(v[2]);
+println(concat(v, ","));
+println(concat(["a", "b"]));
+w = sort([9, 4]);
+println(w[0]);
+println(w[1]);
+
+println(time() > 1600000000);
+println(clock() >= 0);
+
+// require: modulo-script carregado UMA vez; return vira o valor do require
+r1 = require("scripts/libs/util.xlb");
+println(r1);
+println(util_dobro(21));
+println(util_sauda("mundo"));
+r2 = require("scripts/libs/util.xlb");
+println(r2);
+println(r1 == r2);

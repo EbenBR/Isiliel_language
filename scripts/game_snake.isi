@@ -1,0 +1,157 @@
+// game_snake.isi - Jogo da cobrinha (Snake) para exercitar a pilha grafica
+// do interpretador: formas (rect/circle/ellipse/line/point), cores,
+// noFill/noStroke/strokeWeight, texto, animacao por quadro, teclado e HUD.
+//
+// Controles:
+//     w a s d  direcao (nao inverte 180 graus)
+//     r        reinicia depois do game over
+//     q        sai (unico fechamento programatico; Ctrl+C tambem encerra)
+
+// Estado mutavel compartilhado com setup()/draw().
+// L0: setup() roda ANTES do corpo do script — por isso as constantes do
+// tabuleiro sao definidas dentro dele (e declaradas globais aqui).
+global cells, dx, dy, score, over, tick, move_every, fx, fy, tries;
+global gw, gh, cell, speed0;
+
+on_snake(idx) {
+    i = 0;
+    while (i < len(cells)) {
+        if (cells[i] == idx) { return 1; }
+        i = i + 1;
+    }
+    return 0;
+}
+
+place_food() {
+    tries = 0;
+    while (tries < 300) {
+        fx = random_int(0, gw - 1);
+        fy = random_int(0, gh - 1);
+        if (on_snake(fy * gw + fx) == 0) { return; }
+        tries = tries + 1;
+    }
+    // tabuleiro cheio: mantem a comida anterior (o jogo termina ao encher)
+}
+
+reset() {
+    cells = [];
+    i = 0;
+    while (i < 4) {
+        append(cells, 9 * gw + 6 + i);   // corpo horizontal, cabeca em x=9
+        i = i + 1;
+    }
+    dx = 1;
+    dy = 0;
+    score = 0;
+    over = 0;
+    tick = 0;
+    move_every = speed0;
+    fx = 15;        // primeira comida fixa: quadro 1 deterministico
+    fy = 9;
+}
+
+step() {
+    head = cells[len(cells) - 1];
+    hx = head % gw;
+    hy = floordiv(head, gw);
+    nx = hx + dx;
+    ny = hy + dy;
+    if (nx < 0 || nx >= gw || ny < 0 || ny >= gh) { over = 1; return; }
+    nidx = ny * gw + nx;
+    tail = cells[0];
+    // mover para a celula da cauda e legal (ela vai sair neste passo)
+    if (on_snake(nidx) == 1 && nidx != tail) { over = 1; return; }
+    append(cells, nidx);
+    if (nidx == fy * gw + fx) {
+        score = score + 10;
+        if (move_every > 3) { move_every = move_every - 1; }
+        place_food();
+    } else {
+        cells = cells[1:];   // remove a cauda (fatia devolve copia)
+    }
+}
+
+render() {
+    background(12, 14, 28);
+
+    // moldura do tabuleiro: noFill + stroke + strokeWeight
+    noFill();
+    stroke(40, 60, 95);
+    strokeWeight(2);
+    rect(0, 0, gw * cell, gh * cell);
+
+    // comida pulsante: sin(frameCount()) alimenta o diametro do circle
+    pulse = abs(sin(frameCount() / 9));
+    fill(255, 70, 90);
+    noStroke();
+    circle(fx * cell + cell / 2, fy * cell + cell / 2, cell - 6 + pulse * 4);
+
+    // corpo da cobra: um rect por segmento, cabeca em tom mais claro
+    i = 0;
+    while (i < len(cells)) {
+        c = cells[i];
+        cx = (c % gw) * cell;
+        cy = floordiv(c, gw) * cell;
+        if (i == len(cells) - 1) { fill(130, 255, 175); }
+        else { fill(40, 200, 110); }
+        rect(cx + 2, cy + 2, cell - 4, cell - 4);
+        i = i + 1;
+    }
+
+    // HUD (faixa inferior de 48 px)
+    fill(225);
+    textSize(1);
+    text("PONTOS " + str(score), 8, gh * cell + 8);
+    text("wasd mover | r reinicia | q sair", 8, gh * cell + 24);
+    fill(150);
+    text("TAM " + str(len(cells)), 500, gh * cell + 8);
+
+    // tela de game over (painel + texto em escala 3)
+    if (over == 1) {
+        fill(30, 20, 42);
+        stroke(255, 80, 120);
+        strokeWeight(2);
+        rect(96, 150, 384, 120);
+        noStroke();
+        fill(255, 120, 140);
+        textSize(3);
+        text("GAME OVER", 152, 172);
+        textSize(1);
+        fill(230);
+        text("PONTOS " + str(score) + " - tecle r", 120, 238);
+    }
+
+    // captura do primeiro quadro (deterministica para inspecao/teste)
+    if (frameCount() == 1) {
+        save_screen("tests/out/game_snake.ppm");
+    }
+}
+
+setup() {
+    gw = 24;        // colunas do tabuleiro
+    gh = 18;        // linhas
+    cell = 24;      // pixels por celula -> tabuleiro 576 x 432
+    speed0 = 7;     // quadros por passo (menor = mais rapido)
+    size(gw * cell, gh * cell + 48);   // 576 x 480 (tabuleiro + HUD)
+    reset();
+}
+
+draw() {
+    if (keyPressed()) {
+        k = key();
+        if (k == "q") { quit(); }
+        if (k == "r" && over == 1) { reset(); }
+        if (k == "w" && dy == 0) { dx = 0; dy = -1; }
+        if (k == "s" && dy == 0) { dx = 0; dy = 1; }
+        if (k == "a" && dx == 0) { dx = -1; dy = 0; }
+        if (k == "d" && dx == 0) { dx = 1; dy = 0; }
+    }
+    if (over == 0) {
+        tick = tick + 1;
+        if (tick >= move_every) {
+            tick = 0;
+            step();
+        }
+    }
+    render();
+}

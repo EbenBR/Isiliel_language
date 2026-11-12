@@ -1,0 +1,35 @@
+// script_22_imagem - imagem estilo PImage: loadImage/image (roadmap item 13)
+//
+//   img = loadImage(caminho)   -> handle (1, 2, ...); PPM sempre;
+//                                 PNG/JPG/BMP... tambem quando ha raylib
+//   image(img, x, y)           -> desenha no tamanho original
+//   image(img, x, y, w, h)     -> escalona (nearest neighbor)
+//   imageWidth(img)/imageHeight(img) -> dimensoes originais
+//   unloadImage(img)           -> libera a imagem
+// Saida interativa: tecla q (quit()) ou Ctrl+C.
+
+global img;
+
+img = loadImage("scripts/images/mini.ppm");
+println(imageWidth(img));   // 8
+println(imageHeight(img));  // 8
+println(unloadImage(99));   // handle invalido: idempotente (nao lanca erro)
+
+void setup() {
+    size(160, 120);
+}
+
+void draw() {
+    background(30, 30, 50);
+
+    image(img, 4, 4);            // nativo 8x8 (borda preta confere o encaixe)
+    image(img, 40, 20, 64, 40);  // escalada
+    image(img, 120, 90, 16, 16); // escalada (cai na borda da tela)
+
+    // salva so o primeiro quadro (imagem de teste deterministica)
+    if (frameCount() == 1) {
+        println(save_screen("tests/out/script_22_imagem.ppm"));
+    }
+
+    if (keyPressed() && key() == "q") { quit(); }
+}

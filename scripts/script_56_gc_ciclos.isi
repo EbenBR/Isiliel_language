@@ -1,0 +1,53 @@
+// L13: coletor de ciclos (trial deletion) e collectgarbage()
+println("-- auto-ciclo --");
+a = {};
+a.self = a;
+a = nil;
+println("coletados=" + str(collectgarbage()));
+
+println("-- ciclo de duas tabelas --");
+x = {};
+y = {};
+x.y = y;
+y.x = x;
+x = nil;
+y = nil;
+println("coletados=" + str(collectgarbage()));
+
+println("-- objeto vivo --");
+vivo = {};
+vivo.self = vivo;
+println("coletados=" + str(collectgarbage()));
+vivo = nil;
+println("coletados=" + str(collectgarbage()));
+
+println("-- finalizadores --");
+mt = {};
+mt.__gc = fn(o) { println("gc " + o.nome); };
+p = setmetatable({nome = "p"}, mt);
+q = setmetatable({nome = "q"}, mt);
+p.q = q;
+q.p = p;
+p = nil;
+q = nil;
+println("coletados=" + str(collectgarbage()));
+println("fim");
+
+println("-- ciclo tabela/array --");
+t = {};
+arr = [t];
+t.arr = arr;
+t = nil;
+arr = nil;
+println("coletados=" + str(collectgarbage()));
+
+println("-- ciclo com closure --");
+faz = fn() {
+    t = {};
+    g = fn() { return t; };
+    t.g = g;
+    return t;
+};
+c = faz();
+c = nil;
+println("coletou=" + str(collectgarbage() > 0));

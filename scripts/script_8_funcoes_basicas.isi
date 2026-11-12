@@ -1,0 +1,15 @@
+
+calc(a) {
+    torad = 3.1415926/180.0;
+    return (a*torad);
+} 
+soma(x, y) {
+    return (x + y);
+}
+
+a = 30;
+b = calc(a);
+println(b);
+
+res = soma(5, 10);
+println(res);

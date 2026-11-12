@@ -1,0 +1,45 @@
+// Listas 1D: append, len, indexacao negativa, fatias
+teste_append() {
+    v = [[10, 20, 30]];
+    append(v, 40);
+    append(v, 50);
+    println(v);        // [[10, 20, 30, 40, 50]]
+    println(len(v));   // 5
+    println(v[0]);     // 10
+    println(v[-1]);    // 50
+    v[0] = 99;
+    println(v[0]);     // 99
+}
+
+teste_fatias() {
+    v = [[1, 2, 3, 4, 5]];
+    println(v[1:3]);   // [[2, 3]]
+    println(v[2:]);    // [[3, 4, 5]]
+    println(v[:2]);    // [[1, 2]]
+    println(v[:]);     // [[1, 2, 3, 4, 5]]
+    println(v[-2:]);   // [[4, 5]]
+    println(v[3:1]);   // [] (vazio)
+    println(len(v[1:3])); // 2
+}
+
+teste_fatias_string() {
+    s = "abcdefgh";
+    println(s[2:5]);   // cde
+    println(s[:3]);    // abc
+    println(s[-3:]);   // fgh
+    println(s[2:2]);   // (vazio)
+    println(len(s[1:])); // 7
+}
+
+teste_copia() {
+    a = [[1, 2, 3]];
+    b = a[0:2];        // nova lista (copia)
+    append(b, 99);
+    println(a);        // [[1, 2, 3]] (inalterada)
+    println(b);        // [[1, 2, 99]]
+}
+
+teste_append();
+teste_fatias();
+teste_fatias_string();
+teste_copia();

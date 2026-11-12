@@ -1,0 +1,26 @@
+// Teste 3: Álgebra Linear Avançada
+teste3() {
+    println("--- Iniciando Teste 3: Matrizes Avançadas ---");
+    
+    A = [[1, 2], [3, 4]];
+    T = transpose(A);
+    println("Matriz A:");
+    println(A);
+    println("Transposta de A:");
+    println(T);
+    
+    tr = trace(A);
+    println("Traco de A (esperado 5):");
+    println(tr);
+    
+    I = identity(2);
+    println("Matriz Identidade 2x2:");
+    println(I);
+    
+    // Teste de Indexação
+    A[0] = 99; // Modifica o primeiro elemento (indexação linear)
+    println("A apos A[0]=99:");
+    println(A);
+}
+
+teste3();
